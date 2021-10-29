@@ -18,7 +18,7 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-LTR++ is a Learning to Rank library written in C++ and based on the famous [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib%20How%20to%20use/) library. The main goal of this project is to provide a simple, fast and memory safe wich implements a wide variety of LTR models. 
+LTR++ is a Learning to Rank library written in C++ and based on the famous [RankLib](https://sourceforge.net/p/lemur/wiki/RankLib%20How%20to%20use/) library. The main goal of this project is to provide a simple, fast and memory safe Learning to Rank library which implements a wide variety of LTR models. 
 
 ### Built With
 
