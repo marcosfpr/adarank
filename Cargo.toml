@@ -1,0 +1,17 @@
+[package]
+name = "ltrs"
+version = "0.1.0"
+authors = ["Marcos F. Pontes <mfprezende@gmail.com>"]
+license = "MIT"
+edition = "2021"
+categories = ["learning-to-rank", "information-retrieval", "data-structures"]
+description = """Learning to rank library for Rust."""
+homepage = "https://github.com/marcosfpr/ltrs"
+repository = "https://github.com/marcosfpr/ltrs"
+readme = "README.md"
+keywords = ["search", "ranking", "learning-to-rank", "information", "retrieval"]
+
+[dependencies]
+serde = { version = "1.0.136", features = ["derive"] }
+serde_json = "1.0"
+log = "0.4"
