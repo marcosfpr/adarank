@@ -1,10 +1,9 @@
+/// Copyright (c) 2021 Marcos Pontes
+// This code is licensed under MIT license (see LICENSE for details)
+
 use crate::error::LtrError;
 use crate::eval::Evaluator;
 use crate::ranklist::RankList;
-
-/// Copyright (c) 2021 Marcos Pontes
-/// MIT License
-///
 
 ///
 /// MAP (Mean Average Precision) for a set of queries is the mean of the average precision
@@ -24,7 +23,7 @@ impl Evaluator for MAP {
     ///
     /// Evaluates the MAP for a set of queries.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> Result<f64, LtrError> {
+    fn evaluate_ranklist(&self, ranklist: &RankList) -> f64 {
         let mut average_precision = 0.0f64;
         let mut num_relevant_docs = 0;
         for i in 0..ranklist.len() {
@@ -40,12 +39,9 @@ impl Evaluator for MAP {
                 }
             }
         }
-        
-        return if num_relevant_docs > 0 {
-            Ok(average_precision / num_relevant_docs as f64)
-        } else {
-            Err(LtrError::MetricError("Error in MAP::evaluate_ranklist: any relevant documents were found."))
+        match num_relevant_docs {
+            0 => 0.0,
+            _ => average_precision / num_relevant_docs as f64,
         }
-
     }
 }

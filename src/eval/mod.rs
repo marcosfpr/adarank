@@ -1,17 +1,27 @@
 /// Copyright (c) 2021 Marcos Pontes
-/// MIT License
-///
+// This code is licensed under MIT license (see LICENSE for details)
+
 pub mod precision;
 pub mod map;
 
-use crate::ranklist::RankList;
 use crate::DataSet;
+use crate::ranklist::RankList;
 use crate::error::LtrError;
 
 ///
-/// The library supported metrics must implement this trait.
+///
+/// The Evaluator trait allows us to create or own ways to assess
+/// the ranking effectiveness. In the literature, many different evaluators
+/// were already proposed: NDCG, MAP, F1, Precision, Recall, etc.
+///
+/// Currently we  already have some of these evaluators implemented.
+///
+/// Under the hood, to implement an  `Evaluator` you need to
+/// implement the function `evaluate_ranklist`, which evaluates the results
+/// generated  from a single `RankList`.
 ///
 trait Evaluator {
+
     ///
     /// Evaluates a `DataSet`
     ///
@@ -20,25 +30,27 @@ trait Evaluator {
     /// * `dataset` - The `DataSet` to be evaluated.
     ///
     /// # Returns
+    /// Average of the metric defined on the `evaluate_ranklist` function.
     ///
-    /// The metric value.
-    ///
-    /// todo: refactor  all this shit
     fn evaluate_dataset(&self, dataset: &DataSet) -> Result<f64, LtrError> {
+        if dataset.is_empty() {
+            return Err(
+                LtrError::MetricError("Error in Evaluator::evaluate_dataset: the dataset is empty.")
+            );
+        }
         let mut score = 0.0f64;
         for ranklist in dataset {
-            match self.evaluate_ranklist(ranklist) {
-                Ok(value) => {
-                    score += value;
-                }
-                Err(_) => { continue; } // todo: think if this have to be exception safe.
-            }
+            score += evaluate_ranklist(ranklist);
         }
-        return Ok(score / dataset.len() as f64);
+        Ok(score / dataset.len() as f64)
     }
 
+
     ///
-    /// Evaluates a `RankList`. Notice that the `RankList` must be ordered by relevance!
+    /// Evaluates a `RankList` previously ordered by relevance.
+    ///
+    /// Notice that the evaluation is error safe, meaning that if an error occurs during the
+    /// evaluation, the function will return `0.0`.
     ///
     /// # Arguments
     ///
@@ -48,5 +60,5 @@ trait Evaluator {
     ///
     /// The metric value.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> Result<f64, LtrError>;
+    fn evaluate_ranklist(&self, ranklist: &RankList) -> f64;
 }

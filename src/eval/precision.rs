@@ -1,10 +1,9 @@
+/// Copyright (c) 2021 Marcos Pontes
+// This code is licensed under MIT license (see LICENSE for details)
+
 use crate::error::LtrError;
 use crate::eval::Evaluator;
 use crate::ranklist::RankList;
-
-/// Copyright (c) 2021 Marcos Pontes
-/// MIT License
-///
 
 ///
 /// Precision is the fraction of the documents retrieved that are relevant to the user's information need.
@@ -33,6 +32,7 @@ impl Precision {
 
     ///
     /// Set the limit K.
+    /// `limit` must be greater than 0.
     ///
     pub fn set_limit(&mut self, limit: usize) {
         self.limit = limit;
@@ -43,7 +43,7 @@ impl Evaluator for Precision {
     ///
     /// Evaluates the precision of the given rank list.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> Result<f64, LtrError>{
+    fn evaluate_ranklist(&self, ranklist: &RankList) -> f64 {
         let mut precision_score = 0.0f64;
         for i in 0..self.limit {
             match ranklist.get(i) {
@@ -57,6 +57,9 @@ impl Evaluator for Precision {
                 }
             }
         }
-        Ok(precision_score / self.limit as f64)
+        match self.limit {
+            0 => 0.0,
+            _ => precision_score / self.limit as f64,
+        }
     }
 }
