@@ -21,7 +21,7 @@ impl SVMLight {
 
         // Find # to extract the  optional description.
         let mut buffer_iter = buffer.split('#');
-        let buffer_str = buffer_iter.next().ok_or(LtrError::ParseError)?;
+        let buffer_str = buffer_iter.next().ok_or(LtrError::ParseError("Error in SVMLight::load_datapoint: Description processing failure."))?;
         if let Some(info) = buffer_iter.next() {
             data_point.set_description(info.trim());
         }
@@ -44,8 +44,8 @@ impl SVMLight {
             .ok_or(LtrError::InvalidDataPoint("Missing the qid parameter."))?;
 
         let mut qid_iter = qid.split(':');
-        qid_iter.next().ok_or(LtrError::ParseError)?; // Skip the qid:
-        let qid_str = qid_iter.next().ok_or(LtrError::ParseError)?;
+        qid_iter.next().ok_or(LtrError::ParseError("Error in SVMLight::load_datapoint: Query ID processing failure."))?; // Skip the qid:
+        let qid_str = qid_iter.next().ok_or(LtrError::ParseError("Error in SVMLight::load_datapoint: Query ID processing failure"))?;
         let qid = qid_str
             .parse::<u32>()
             .map_err(|_| LtrError::InvalidDataPoint("Invalid qid parameter."))?;

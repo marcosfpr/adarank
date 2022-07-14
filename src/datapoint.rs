@@ -1,6 +1,7 @@
-use std::cmp::Ordering;
 /// Copyright (c) 2021 Marcos Pontes
-/// MIT License
+// This code is licensed under MIT license (see LICENSE for details)
+
+use std::cmp::Ordering;
 use std::fmt;
 use std::ops::Index;
 
@@ -9,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::LtrError;
 
 ///
-/// A particular Feature for Sevro is just a floating point value.
+/// A particular Feature for lt.rs is just a floating point value.
 /// The feature_value is the value of the feature.
 type Feature = f32;
 
@@ -264,6 +265,24 @@ impl Index<usize> for DataPoint {
     }
 }
 
+///
+/// A macro to create a new DataPoint.
+/// This macro is useful when creating a new DataPoint with a given label, the query_id, the
+/// features and the description.
+/// The features are given as a vector of `Feature`s.
+/// The description is optional.
+/// 
+#[macro_export]
+macro_rules! dp {
+    ($label:expr, $query_id:expr, $features:expr) => {
+        DataPoint::new($label, $query_id, $features, None)
+    };
+    ($label:expr, $query_id:expr, $features:expr, $description:expr) => {
+        DataPoint::new($label, $query_id, $features, Some($description))
+    };
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -271,7 +290,7 @@ mod tests {
     #[test]
     fn test_data_point_new() {
         let features: Vec<Feature> = vec![1.2, 3.4, 5.6];
-        let mut data_point = DataPoint::new(1, 2, features.clone(), Some("This is a test"));
+        let mut data_point =  dp!(1, 2, features.clone(), "This is a test"); 
         assert_eq!(data_point.get_label(), 1);
         assert_eq!(data_point.get_query_id(), 2);
         assert_eq!(data_point.get_features(), &features);

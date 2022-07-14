@@ -1,6 +1,6 @@
 /// Copyright (c) 2021 Marcos Pontes
-/// MIT License
-///
+// This code is licensed under MIT license (see LICENSE for details)
+
 pub mod datapoint;
 pub mod error;
 pub mod eval;

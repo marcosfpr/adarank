@@ -35,12 +35,12 @@ trait Evaluator {
     fn evaluate_dataset(&self, dataset: &DataSet) -> Result<f64, LtrError> {
         if dataset.is_empty() {
             return Err(
-                LtrError::MetricError("Error in Evaluator::evaluate_dataset: the dataset is empty.")
+                LtrError::EvaluationError("Error in Evaluator::evaluate_dataset: the dataset is empty.")
             );
         }
         let mut score = 0.0f64;
         for ranklist in dataset {
-            score += evaluate_ranklist(ranklist);
+            score += self.evaluate_ranklist(ranklist);
         }
         Ok(score / dataset.len() as f64)
     }
@@ -62,3 +62,5 @@ trait Evaluator {
     ///
     fn evaluate_ranklist(&self, ranklist: &RankList) -> f64;
 }
+
+// todo: test this module

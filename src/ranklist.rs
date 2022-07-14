@@ -1,3 +1,6 @@
+/// Copyright (c) 2021 Marcos Pontes
+// This code is licensed under MIT license (see LICENSE for details)
+
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -6,8 +9,6 @@ use serde::{Deserialize, Serialize};
 use crate::datapoint::DataPoint;
 use crate::error::LtrError;
 
-/// Copyright (c) 2021 Marcos Pontes
-/// MIT License
 
 /// A RankList is the object to be ranked by models.
 ///
@@ -143,6 +144,39 @@ impl fmt::Display for RankList {
     }
 }
 
+///
+/// A macro to create a `RankList` from a vector of
+/// `DataPoint`s represented by a tuple of label,  query_id, 
+/// features and the optional description.
+/// Example:
+/// ```
+/// let rank_list = ranklist!(
+///    (1, 100, vec![1.0, 2.0, 3.0], "description"),
+///    (2, 100, vec![1.0, 2.0, 3.0], "description"),
+///    (3, 100, vec![1.0, 2.0, 3.0], "description")
+/// );
+/// 
+macro_rules! rl {
+    ($(($label:expr, $query_id:expr, $features:expr)),*) => {
+        {
+            let mut data_points = Vec::new();
+            $(
+                data_points.push(crate::dp!($label, $query_id, $features));
+            )*
+            RankList::new(data_points)
+        }
+    };
+    ($(($label:expr, $query_id:expr, $features:expr, $description:expr)),*) => {
+        {
+            let mut data_points = Vec::new();
+            $(
+                data_points.push(crate::dp!($label, $query_id, $features, $description));
+            )*
+            RankList::new(data_points)
+        }
+    };
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -150,13 +184,13 @@ mod tests {
 
     #[test]
     fn test_ranklist() {
-        let data_points = vec![
-            SVMLight::load_datapoint("0 qid:9 1:10 2:1.2 3:4.3 4:5.4 # doc1").unwrap(),
-            SVMLight::load_datapoint("1 qid:9 1:11 2:2.2 3:4.5 4:5.6 # doc2").unwrap(),
-            SVMLight::load_datapoint("0 qid:9 1:12 2:2.5 3:4.7 4:5.2 # doc3").unwrap(),
-        ];
 
-        let rank_list = RankList::new(data_points);
+        let rank_list = rl!(
+            (0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
+            (1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),
+            (0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3")
+        );
+
         assert_eq!(rank_list.len(), 3);
 
         let another_rank_list = rank_list.clone();

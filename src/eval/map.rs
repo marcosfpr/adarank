@@ -1,7 +1,6 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 
-use crate::error::LtrError;
 use crate::eval::Evaluator;
 use crate::ranklist::RankList;
 
@@ -12,12 +11,6 @@ use crate::ranklist::RankList;
 ///
 #[derive(Debug, Clone)]
 struct MAP;
-
-impl MAP {
-    pub fn new() -> MAP {
-        MAP
-    }
-}
 
 impl Evaluator for MAP {
     ///
@@ -43,5 +36,17 @@ impl Evaluator for MAP {
             0 => 0.0,
             _ => average_precision / num_relevant_docs as f64,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ranklist::RankList;
+    use crate::datapoint::DataPoint;
+
+    #[test]
+    fn test_map() {
+
     }
 }
