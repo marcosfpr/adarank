@@ -4,21 +4,24 @@
 
 # Project Information
 cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
+
 project(ltrpp VERSION 1.0.0)
 set(CMAKE_CXX_STANDARD 17)
 
+message(STATUS "Is the C++ compiler loaded? ${CMAKE_CXX_COMPILER_LOADED}")
+if(CMAKE_CXX_COMPILER_LOADED)
+        message(STATUS "The C++ compiler ID is: ${CMAKE_CXX_COMPILER_ID}")
+        message(STATUS "Is the C++ from GNU? ${CMAKE_COMPILER_IS_GNUCXX}")
+        message(STATUS "The C++ compiler version is: ${CMAKE_CXX_COMPILER_VERSION}")
+endif()
 
 # CMake dependencies for installer
 include(CMakePackageConfigHelpers)
 include(GNUInstallDirs)
 
-
 # Finding or downloading packages
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 message("CMAKE_MODULE_PATH=${CMAKE_MODULE_PATH}")
-option(CPM_USE_LOCAL_PACKAGES "Try `find_package` before downloading dependencies" ON)
-include(cmake/CPM.cmake)
-
 
 # check if this is a master project or a subdirectory of another project
 if (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_SOURCE_DIR})
@@ -28,7 +31,6 @@ else()
 endif()
 
 set(LTRPP_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
-
 
 # check if we are in debug mode
 if(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -48,6 +50,7 @@ option(BUILD_TESTS "Build tests" ${MASTER_PROJECT})
 option(BUILD_DOCS "Build documentation" ${MASTER_PROJECT})
 option(BUILD_INSTALLER "Build installer target" ${MASTER_PROJECT})
 option(BUILD_PACKAGE "Build package" ${MASTER_PROJECT})
+option(BUILD_CONAN "Build with conan" ${MASTER_PROJECT})
 
 # How to build
 option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
@@ -60,6 +63,15 @@ option(BUILD_WITH_UTF8 "Accept utf-8 in MSVC by default." ON)
 find_program(GCOV gcov)
 find_program(LCOV lcov)
 find_program(GENHTML genhtml)
+
+# Using CPM-CMake or conan
+if(BUILD_CONAN)
+        include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+        conan_basic_setup()
+else()
+        option(CPM_USE_LOCAL_PACKAGES "Try `find_package` before downloading dependencies" ON)
+        include(cmake/CPM.cmake)
+endif()
 
 if(GCOV AND LCOV AND GENHTML)
         set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage -O0")

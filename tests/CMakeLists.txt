@@ -1,18 +1,8 @@
-# set env variables
-set(OHSUMED "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/OHSUMED")
-
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
-
-# GTest library
-CPMAddPackage(
-  NAME googletest
-  GITHUB_REPOSITORY google/googletest
-  GIT_TAG release-1.10.0
-  VERSION 1.10.0
-  OPTIONS "INSTALL_GTEST OFF" "gtest_force_shared_crt"
-)
+# set env variable OSH
+set(ENV{OHSUMED} "${CMAKE_CURRENT_SOURCE_DIR}/benchmarks/OHSUMED")
 
 find_package(Threads REQUIRED)
+add_definitions(-DBOOST_ALL_DYN_LINK)
 
 add_executable(
   test_ltrpp
@@ -33,8 +23,27 @@ add_executable(
         functional/RankingAdaRank.cpp
 )
 
-target_link_libraries(test_ltrpp ltr Threads::Threads gtest gtest_main)
-target_link_libraries(func_ltrpp ltr Threads::Threads gtest gtest_main)
+if(BUILD_CONAN)
+
+    target_link_libraries(test_ltrpp ltr Threads::Threads ${CONAN_LIBS})
+    target_link_libraries(func_ltrpp ltr Threads::Threads ${CONAN_LIBS})
+
+else()
+        # GTest library
+        CPMAddPackage(
+                NAME googletest
+                GITHUB_REPOSITORY google/googletest
+                GIT_TAG release-1.10.0
+                VERSION 1.10.0
+                OPTIONS "INSTALL_GTEST OFF" "gtest_force_shared_crt"
+        )
+
+        target_link_libraries(test_ltrpp ltr Boost::boost Threads::Threads gtest gtest_main)
+        target_link_libraries(func_ltrpp ltr Boost::boost Threads::Threads gtest gtest_main)
+endif()
+
+include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+
 
 # Create testing target and redirect its output to `Testing` folder
 add_test(NAME test_ltrpp COMMAND test_ltrpp WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/Testing)
