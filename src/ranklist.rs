@@ -188,7 +188,7 @@ macro_rules! rl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::svmlight::*;
+    use crate::loader::svmlight::*;
 
     #[test]
     fn test_ranklist() {

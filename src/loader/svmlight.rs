@@ -1,7 +1,6 @@
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
-
 use crate::datapoint::DataPoint;
 use crate::error::LtrError;
 use crate::ranklist::RankList;
@@ -22,7 +21,9 @@ impl SVMLight {
 
         // Find # to extract the  optional description.
         let mut buffer_iter = buffer.split('#');
-        let buffer_str = buffer_iter.next().ok_or(LtrError::ParseError("Error in SVMLight::load_datapoint: Description processing failure."))?;
+        let buffer_str = buffer_iter.next().ok_or(LtrError::ParseError(
+            "Error in SVMLight::load_datapoint: Description processing failure.",
+        ))?;
         if let Some(info) = buffer_iter.next() {
             data_point.set_description(info.trim());
         }
@@ -45,8 +46,12 @@ impl SVMLight {
             .ok_or(LtrError::InvalidDataPoint("Missing the qid parameter."))?;
 
         let mut qid_iter = qid.split(':');
-        qid_iter.next().ok_or(LtrError::ParseError("Error in SVMLight::load_datapoint: Query ID processing failure."))?; // Skip the qid:
-        let qid_str = qid_iter.next().ok_or(LtrError::ParseError("Error in SVMLight::load_datapoint: Query ID processing failure"))?;
+        qid_iter.next().ok_or(LtrError::ParseError(
+            "Error in SVMLight::load_datapoint: Query ID processing failure.",
+        ))?; // Skip the qid:
+        let qid_str = qid_iter.next().ok_or(LtrError::ParseError(
+            "Error in SVMLight::load_datapoint: Query ID processing failure",
+        ))?;
         let qid = qid_str
             .parse::<u32>()
             .map_err(|_| LtrError::InvalidDataPoint("Invalid qid parameter."))?;
@@ -171,6 +176,5 @@ mod tests {
         assert_eq!(*data_point.get_feature(1).unwrap(), 1.0f32);
         assert_eq!(*data_point.get_feature(2).unwrap(), 222.3f32);
         assert_eq!(*data_point.get_feature(3).unwrap(), 444.5f32)
-
     }
 }
