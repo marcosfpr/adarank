@@ -1,8 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
-/// 
+///
 use std::fmt::Display;
-
 
 ///
 /// All errors specific to the LTR library.
@@ -19,7 +18,6 @@ pub enum LtrError {
 }
 
 impl Display for LtrError {
-    
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             LtrError::FeatureIndexOutOfBounds => write!(f, "Feature index out of bounds"),
@@ -27,6 +25,6 @@ impl Display for LtrError {
             LtrError::InvalidDataPoint(msg) => write!(f, "Invalid datapoint: {}", msg),
             LtrError::EvaluationError(msg) => write!(f, "Evaluation error: {}", msg),
             LtrError::ParseError(msg) => write!(f, "Error while parsing an input: {}", msg),
-        }    
+        }
     }
 }

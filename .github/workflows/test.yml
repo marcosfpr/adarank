@@ -1,0 +1,46 @@
+name: Unit tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install latest nightly to test also against unstable feature flag
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt
+
+      - name: Install stable
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: rustfmt, clippy
+
+      - name: Build
+        run: cargo build --verbose --workspace
+
+      - name: Run tests
+        run: cargo +stable test --verbose --workspace
+
+      - name: Check Formatting
+        run: cargo +nightly fmt --all -- --check
+
+      - uses: actions-rs/clippy-check@v1
+        with:
+          toolchain: stable
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --tests

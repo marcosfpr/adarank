@@ -1,6 +1,5 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -8,7 +7,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::datapoint::DataPoint;
 use crate::error::LtrError;
-
 
 /// A RankList is the object to be ranked by models.
 ///
@@ -119,6 +117,10 @@ impl RankList {
     }
 }
 
+///
+/// `RankList`s are iterable over `DataPoint`s.
+/// This allows for easy iteration over the `RankList`.
+///
 impl IntoIterator for RankList {
     type Item = DataPoint;
     type IntoIter = std::vec::IntoIter<DataPoint>;
@@ -128,12 +130,18 @@ impl IntoIterator for RankList {
     }
 }
 
+///
+/// We can interpret a `RankList` as a `Vec` of `DataPoint`s.
+///
 impl From<Vec<DataPoint>> for RankList {
     fn from(data_points: Vec<DataPoint>) -> RankList {
         RankList { data_points }
     }
 }
 
+///
+/// Displaying a `RankList` is done by displaying the `DataPoint`s.
+///
 impl fmt::Display for RankList {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
@@ -146,7 +154,7 @@ impl fmt::Display for RankList {
 
 ///
 /// A macro to create a `RankList` from a vector of
-/// `DataPoint`s represented by a tuple of label,  query_id, 
+/// `DataPoint`s represented by a tuple of label,  query_id,
 /// features and the optional description.
 /// Example:
 /// ```
@@ -155,7 +163,7 @@ impl fmt::Display for RankList {
 ///    (2, 100, vec![1.0, 2.0, 3.0], "description"),
 ///    (3, 100, vec![1.0, 2.0, 3.0], "description")
 /// );
-/// 
+///
 macro_rules! rl {
     ($(($label:expr, $query_id:expr, $features:expr)),*) => {
         {
@@ -184,7 +192,6 @@ mod tests {
 
     #[test]
     fn test_ranklist() {
-
         let rank_list = rl!(
             (0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
             (1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),

@@ -1,6 +1,5 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-
 use std::cmp::Ordering;
 use std::fmt;
 use std::ops::Index;
@@ -271,7 +270,7 @@ impl Index<usize> for DataPoint {
 /// features and the description.
 /// The features are given as a vector of `Feature`s.
 /// The description is optional.
-/// 
+///
 #[macro_export]
 macro_rules! dp {
     ($label:expr, $query_id:expr, $features:expr) => {
@@ -282,7 +281,6 @@ macro_rules! dp {
     };
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -290,7 +288,7 @@ mod tests {
     #[test]
     fn test_data_point_new() {
         let features: Vec<Feature> = vec![1.2, 3.4, 5.6];
-        let mut data_point =  dp!(1, 2, features.clone(), "This is a test"); 
+        let mut data_point = dp!(1, 2, features.clone(), "This is a test");
         assert_eq!(data_point.get_label(), 1);
         assert_eq!(data_point.get_query_id(), 2);
         assert_eq!(data_point.get_features(), &features);

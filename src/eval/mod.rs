@@ -1,12 +1,11 @@
+pub mod map;
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-
 pub mod precision;
-pub mod map;
 
-use crate::DataSet;
-use crate::ranklist::RankList;
 use crate::error::LtrError;
+use crate::ranklist::RankList;
+use crate::DataSet;
 
 ///
 ///
@@ -21,7 +20,6 @@ use crate::error::LtrError;
 /// generated  from a single `RankList`.
 ///
 trait Evaluator {
-
     ///
     /// Evaluates a `DataSet`
     ///
@@ -34,9 +32,9 @@ trait Evaluator {
     ///
     fn evaluate_dataset(&self, dataset: &DataSet) -> Result<f64, LtrError> {
         if dataset.is_empty() {
-            return Err(
-                LtrError::EvaluationError("Error in Evaluator::evaluate_dataset: the dataset is empty.")
-            );
+            return Err(LtrError::EvaluationError(
+                "Error in Evaluator::evaluate_dataset: the dataset is empty.",
+            ));
         }
         let mut score = 0.0f64;
         for ranklist in dataset {
@@ -44,7 +42,6 @@ trait Evaluator {
         }
         Ok(score / dataset.len() as f64)
     }
-
 
     ///
     /// Evaluates a `RankList` previously ordered by relevance.

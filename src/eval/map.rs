@@ -1,6 +1,5 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-
 use crate::eval::Evaluator;
 use crate::ranklist::RankList;
 
@@ -42,11 +41,9 @@ impl Evaluator for MAP {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ranklist::RankList;
     use crate::datapoint::DataPoint;
+    use crate::ranklist::RankList;
 
     #[test]
-    fn test_map() {
-
-    }
+    fn test_map() {}
 }

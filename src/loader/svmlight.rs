@@ -1,6 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
+
 use crate::datapoint::DataPoint;
 use crate::error::LtrError;
 use crate::ranklist::RankList;
@@ -160,5 +161,16 @@ mod tests {
         assert_eq!(*data_point.get_feature(1).unwrap(), 21.0f32);
         assert_eq!(*data_point.get_feature(2).unwrap(), 2.3f32);
         assert_eq!(*data_point.get_feature(3).unwrap(), 4.5f32);
+
+        let buffer_without_description: &str = "20 qid:9 1:1.00 2:222.30 3:444.50";
+        let data_point = SVMLight::load_datapoint(buffer_without_description).unwrap();
+        assert_eq!(data_point.get_description(), None);
+        assert_eq!(data_point.get_label(), 20);
+        assert_eq!(data_point.get_query_id(), 9);
+        assert_eq!(data_point.get_features().len(), 3);
+        assert_eq!(*data_point.get_feature(1).unwrap(), 1.0f32);
+        assert_eq!(*data_point.get_feature(2).unwrap(), 222.3f32);
+        assert_eq!(*data_point.get_feature(3).unwrap(), 444.5f32)
+
     }
 }
