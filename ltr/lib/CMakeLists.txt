@@ -2,25 +2,6 @@
 ### Source                                          ###
 #######################################################
 
-CPMFindPackage(
-    NAME boost-cmake
-    GITHUB_REPOSITORY marcosfpr/boost-cmake
-    VERSION 1.71.0
-    FIND_PACKAGE_ARGUMENTS ""
-)
-
-CPMFindPackage(
-    NAME spdlog
-    GITHUB_REPOSITORY gabime/spdlog
-    VERSION 1.8.2
-    FIND_PACKAGE_ARGUMENTS ""
-)
-
-add_definitions(-DBOOST_ALL_DYN_LINK)
-
-find_package(Threads REQUIRED)
-
-
 set(
     SOURCES
 
@@ -44,13 +25,37 @@ add_library(
     ${SOURCES}
 )
 
+if (NOT BUILD_CONAN)
+    CPMFindPackage(
+            NAME boost-cmake
+            GITHUB_REPOSITORY marcosfpr/boost-cmake
+            VERSION 1.71.0
+            FIND_PACKAGE_ARGUMENTS ""
+    )
+
+    CPMFindPackage(
+            NAME spdlog
+            GITHUB_REPOSITORY gabime/spdlog
+            VERSION 1.8.2
+            FIND_PACKAGE_ARGUMENTS ""
+    )
+endif()
+
+add_definitions(-DBOOST_ALL_DYN_LINK)
+
+find_package(Threads REQUIRED)
+
+
 target_include_directories(
     ltr
     PUBLIC api
 )
 
-# 
-target_link_libraries(ltr PRIVATE Boost::boost spdlog ${FILE_SYSTEM_LIB} Threads::Threads)
+if (BUILD_CONAN)
+    target_link_libraries(ltr PRIVATE ${CONAN_LIBS} Threads::Threads)
+else()
+    target_link_libraries(ltr PRIVATE Boost::boost spdlog ${FILE_SYSTEM_LIB} Threads::Threads)
+endif()
 
 target_compile_features(ltr PUBLIC cxx_std_17)
 
