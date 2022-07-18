@@ -156,13 +156,6 @@ impl fmt::Display for RankList {
 /// A macro to create a `RankList` from a vector of
 /// `DataPoint`s represented by a tuple of label,  query_id,
 /// features and the optional description.
-/// Example:
-/// ```
-/// let rank_list = ranklist!(
-///    (1, 100, vec![1.0, 2.0, 3.0], "description"),
-///    (2, 100, vec![1.0, 2.0, 3.0], "description"),
-///    (3, 100, vec![1.0, 2.0, 3.0], "description")
-/// );
 ///
 macro_rules! rl {
     ($(($label:expr, $query_id:expr, $features:expr)),*) => {
