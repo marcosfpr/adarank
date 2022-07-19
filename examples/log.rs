@@ -1,15 +1,12 @@
 #[macro_use]
 extern crate ltrs;
-#[macro_use]
-extern crate prettytable;
 
-use ltrs::utils::logging::*;
+use ltrs::utils::{
+    format::{Alignment, TableLogger},
+    logging::*,
+};
 
 use log::{debug, error, info, trace, warn};
-use prettytable::{
-    format::{self, TableFormat},
-    Table,
-};
 
 fn main() {
     init_logger();
@@ -20,10 +17,29 @@ fn main() {
     error!("{}", "Error message");
     trace!("{}", "Trace message");
 
-    let mut table = Table::new();
+    let table = TableLogger::default();
+    let mut writer = StringWriter::new();
 
-    let r = row!["aa", "bb", "cc"];
+    table
+        .log_separator(&mut writer, &[10, 8, 5], (2, 2), true, true, true)
+        .unwrap();
 
-    // String that implements Write    let r = row!["Title 1", "Title 2"];
-    info!("\n{}", table_header(row!["Title 1", "Title 2"]));
+    table
+        .log_value(
+            &mut writer,
+            vec!["foo", "bar", "baz"],
+            &[10, 8, 5],
+            (2, 2),
+            Alignment::Center,
+            true,
+            true,
+            true,
+        )
+        .unwrap();
+
+    table
+        .log_separator(&mut writer, &[10, 8, 5], (2, 2), true, true, true)
+        .unwrap();
+
+    info!("\n{}", writer.as_string());
 }

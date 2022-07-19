@@ -1,6 +1,8 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-#[macro_use] extern crate prettytable;
+
+#[macro_use]
+extern crate lazy_static;
 
 pub mod datapoint;
 pub mod error;

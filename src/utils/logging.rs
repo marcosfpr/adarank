@@ -1,18 +1,14 @@
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
-use std::{io::{ErrorKind, Write}, str::FromStr};
+use std::{
+    io::{ErrorKind, Write},
+    str::FromStr,
+};
 
 use colored::{ColoredString, Colorize};
 use env_logger;
 use log::Level;
-
-use prettytable::{
-    color,
-    format::{self, TableFormat},
-    row::Row,
-    Attr,
-};
 
 /// Internal utility for writing data into a string
 pub struct StringWriter {
@@ -86,39 +82,5 @@ fn color_by_level(level: Level) -> ColoredString {
         Level::Debug => "Debug".green(),
         Level::Trace => "Trace".magenta(),
     }
-}
-
-///
-/// Receives a row and produces a header str.
-///
-/// Example:
-/// ```
-/// let header = log_header([row!["Title 1", "Title 2"]]);
-/// ```
-pub fn table_header(row: Row) -> String {
-    let f = format::FormatBuilder::new()
-        .column_separator('|')
-        .borders('|')
-        .separators(
-            &[format::LinePosition::Top, format::LinePosition::Bottom],
-            format::LineSeparator::new('-', '+', '+', '+'),
-        )
-        .padding(2, 2)
-        .build();
-
-    let mut writer = StringWriter::new();
-
-    let height: usize = row.get_height();
-    let length: usize = row.len();
-
-    // &[height, height, ...] length times
-    let heights: Vec<usize> = (0..length).map(|_| 1).collect();
-
-    f.print_line_separator(&mut writer, &heights, format::LinePosition::Top)
-        .unwrap();
-    row.print(&mut writer, &f, &heights).unwrap();
-    f.print_line_separator(&mut writer, &heights, format::LinePosition::Bottom)
-        .unwrap();
-    String::from_str(writer.as_string()).unwrap()
 }
 
