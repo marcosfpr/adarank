@@ -3,3 +3,6 @@
 
 /// Logging capabilities for lt.rs
 pub mod logging;
+
+/// Formatting capabilities for lt.rs
+pub mod format;

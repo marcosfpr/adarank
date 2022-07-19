@@ -1,16 +1,54 @@
-use log::Level;
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
-use std::io::Write;
+use std::{
+    io::{ErrorKind, Write},
+    str::FromStr,
+};
 
 use colored::{ColoredString, Colorize};
 use env_logger;
-use prettytable::{
-    format::{FormatBuilder, TableFormat},
-    Cell, Row, Table,
-};
+use log::Level;
 
+/// Internal utility for writing data into a string
+pub struct StringWriter {
+    string: String,
+}
+
+impl StringWriter {
+    /// Create a new `StringWriter`
+    pub fn new() -> StringWriter {
+        StringWriter {
+            string: String::new(),
+        }
+    }
+
+    /// Return a reference to the internally written `String`
+    pub fn as_string(&self) -> &str {
+        &self.string
+    }
+}
+
+impl Write for StringWriter {
+    fn write(&mut self, data: &[u8]) -> Result<usize, std::io::Error> {
+        let string = match std::str::from_utf8(data) {
+            Ok(s) => s,
+            Err(e) => {
+                return Err(std::io::Error::new(
+                    ErrorKind::Other,
+                    format!("Cannot decode utf8 string : {}", e),
+                ))
+            }
+        };
+        self.string.push_str(string);
+        Ok(data.len())
+    }
+
+    fn flush(&mut self) -> Result<(), std::io::Error> {
+        // Nothing to do here
+        Ok(())
+    }
+}
 
 ///
 /// Initializes the logger with the environment variable `RUST_LOG`.
@@ -33,24 +71,6 @@ pub fn init_logger() {
         .init();
 }
 
-pub fn create_table() -> prettytable::Table {
-    let mut table = Table::new();
-    let format = prettytable::format::FormatBuilder::new()
-        .column_separator('|')
-        .borders('|')
-        .separators(
-            &[
-                prettytable::format::LinePosition::Top,
-                prettytable::format::LinePosition::Bottom,
-            ],
-            prettytable::format::LineSeparator::new('-', '+', '+', '+'),
-        )
-        .padding(1, 1)
-        .build();
-    table.set_format(format);
-    table
-}
-
 ///
 /// Colorize the record level.
 ///
@@ -63,3 +83,4 @@ fn color_by_level(level: Level) -> ColoredString {
         Level::Trace => "Trace".magenta(),
     }
 }
+
