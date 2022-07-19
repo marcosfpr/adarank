@@ -122,10 +122,3 @@ pub fn table_header(row: Row) -> String {
     String::from_str(writer.as_string()).unwrap()
 }
 
-pub fn table_log(msg: Vec<&str>) -> String {
-    todo!()
-}
-
-macro_rules! log_row {
-    () => {};
-}
