@@ -1,15 +1,13 @@
-use log::Level;
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
 use std::io::Write;
 
+use log::Level;
 use colored::{ColoredString, Colorize};
 use env_logger;
-use prettytable::{
-    format::{FormatBuilder, TableFormat},
-    Cell, Row, Table,
-};
+
+use crate::utils::table_format;
 
 
 ///
@@ -33,23 +31,6 @@ pub fn init_logger() {
         .init();
 }
 
-pub fn create_table() -> prettytable::Table {
-    let mut table = Table::new();
-    let format = prettytable::format::FormatBuilder::new()
-        .column_separator('|')
-        .borders('|')
-        .separators(
-            &[
-                prettytable::format::LinePosition::Top,
-                prettytable::format::LinePosition::Bottom,
-            ],
-            prettytable::format::LineSeparator::new('-', '+', '+', '+'),
-        )
-        .padding(1, 1)
-        .build();
-    table.set_format(format);
-    table
-}
 
 ///
 /// Colorize the record level.
@@ -62,4 +43,20 @@ fn color_by_level(level: Level) -> ColoredString {
         Level::Debug => "Debug".green(),
         Level::Trace => "Trace".magenta(),
     }
+}
+
+fn table_log(msg: Vec<&str>) {
+    todo!()
+}
+
+macro_rules! log_row {
+    () => {
+        
+    };
+}
+
+macro_rules! log_header {
+    () => {
+        
+    };
 }
