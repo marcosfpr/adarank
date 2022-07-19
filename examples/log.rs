@@ -2,7 +2,7 @@
 extern crate ltrs;
 
 use ltrs::utils::{
-    format::{Alignment, TableLogger},
+    format::{Alignment, TableLogger, TableConfig},
     logging::*,
 };
 
@@ -42,4 +42,8 @@ fn main() {
         .unwrap();
 
     info!("\n{}", writer.as_string());
+
+    let config = TableConfig::new(vec![10, 8, 5], (2, 2), Alignment::Center, true, true, true);
+
+    info!("\n{}", log_table_header(vec!["foo", "bah", "zoo"], &config));
 }

@@ -27,6 +27,56 @@ pub enum Alignment {
     Center,
 }
 
+/// Useful configs to logging tables
+pub struct TableConfig {
+    /// Column widths
+    pub col_width: Vec<usize>,
+    /// Left and right padding factors
+    pub padding: (usize, usize),
+    /// Alignment strategy
+    pub align: Alignment,
+    /// True if the column will be separated
+    pub colsep: bool,
+    /// True if the left border will be separated
+    pub lborder: bool,
+    /// True if the right border will be separated
+    pub rborder: bool,
+}
+
+impl TableConfig {
+    /// Create a `TableConfig` based on its arguments
+    pub fn new(
+        col_width: Vec<usize>,
+        padding: (usize, usize),
+        align: Alignment,
+        colsep: bool,
+        lborder: bool,
+        rborder: bool,
+    ) -> TableConfig {
+        TableConfig {
+            col_width,
+            padding,
+            align,
+            colsep,
+            lborder,
+            rborder,
+        }
+    }
+
+    /// Create a `TableConfig` based on the header values
+    pub fn from_header(
+        header: &[&str],
+        padding: (usize, usize),
+        align: Alignment,
+        colsep: bool,
+        lborder: bool,
+        rborder: bool,
+    ) -> TableConfig {
+        let col_width = header.iter().map(|s| s.width()).collect();
+        TableConfig::new(col_width, padding, align, colsep, lborder, rborder)
+    }
+}
+
 /// Table print simplified
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct TableLogger {
@@ -145,6 +195,21 @@ impl TableLogger {
         Ok(1)
     }
 
+    pub fn log_separator_with_config<T: Write + ?Sized>(
+        &self,
+        out: &mut T,
+        config: &TableConfig,
+    ) -> Result<usize, Error> {
+        self.log_separator(
+            out,
+            &config.col_width,
+            config.padding,
+            config.colsep,
+            config.lborder,
+            config.rborder,
+        )
+    }
+
     /// Print a value to `out`. `col_width` is a slice containing the width of each column.
     pub fn log_value<T: Write + ?Sized, F: ToString>(
         &self,
@@ -167,13 +232,7 @@ impl TableLogger {
 
         while let Some((v, w)) = iter.next() {
             let has_next: bool = iter.peek().is_some();
-            TableLogger::align(
-                out,
-                align,
-                &v.to_string(),
-                ' ',
-                *w + padding.0 + padding.1,
-            )?;
+            TableLogger::align(out, align, &v.to_string(), ' ', *w + padding.0 + padding.1)?;
             if colsep && has_next {
                 out.write_all(Utf8Char::from(self.junc).as_bytes())?;
             }
@@ -185,6 +244,24 @@ impl TableLogger {
 
         out.write_all(NEWLINE)?;
         Ok(1)
+    }
+
+    pub fn log_value_with_config<T: Write + ?Sized, F: ToString>(
+        &self,
+        out: &mut T,
+        value: Vec<F>,
+        config: &TableConfig,
+    ) -> Result<usize, Error> {
+        self.log_value(
+            out,
+            value,
+            &config.col_width,
+            config.padding,
+            config.align,
+            config.colsep,
+            config.lborder,
+            config.rborder,
+        )
     }
 }
 
@@ -234,15 +311,14 @@ impl Write for StringWriter {
     }
 }
 
-mod consts {
+pub mod consts {
 
     lazy_static! {
 
         /// The default TableLogger
-        pub static ref DEFAULT_LOGGER: super::TableLogger = super::TableLogger::default();
-    
-    }
+        pub static ref DEFAULT_TABLE_LOGGER: super::TableLogger = super::TableLogger::default();
 
+    }
 }
 
 #[cfg(test)]
@@ -272,11 +348,12 @@ mod tests {
             true,
             true,
             true,
-        ).unwrap();
+        )
+        .unwrap();
 
         assert_eq!(
             writer.as_string(),
-            "+--------------+------------+---------+\n+foo           +bar         +baz+\n"
+            "+--------------+------------+---------+\n+foo           +bar         +baz      +\n"
         );
     }
 }

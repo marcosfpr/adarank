@@ -2,13 +2,14 @@
 /// MIT License
 ///
 use std::{
-    io::{ErrorKind, Write},
-    str::FromStr,
+    io::{ErrorKind, Write}, str::FromStr,
 };
 
 use colored::{ColoredString, Colorize};
 use env_logger;
 use log::Level;
+
+use super::format::{TableConfig, consts::DEFAULT_TABLE_LOGGER};
 
 /// Internal utility for writing data into a string
 pub struct StringWriter {
@@ -82,5 +83,23 @@ fn color_by_level(level: Level) -> ColoredString {
         Level::Debug => "Debug".green(),
         Level::Trace => "Trace".magenta(),
     }
+}
+
+///
+/// Utility function that prints a log header based on the `TableConfig` specifications.
+/// 
+pub fn log_table_header(header: Vec<&str>, config: &TableConfig) -> String {
+
+    let mut writer = StringWriter::new();
+    let logger = DEFAULT_TABLE_LOGGER.clone();
+
+    logger.log_separator_with_config(&mut writer, &config).unwrap();
+
+    logger.log_value_with_config(&mut writer, header, &config).unwrap();
+
+    logger.log_separator_with_config(&mut writer, &config).unwrap();
+
+    String::from_str(writer.as_string()).unwrap()
+
 }
 
