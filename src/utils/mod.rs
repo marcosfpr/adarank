@@ -3,7 +3,3 @@
 
 /// Logging capabilities for lt.rs
 pub mod logging;
-
-/// Table creator  for lt.rs
-pub mod table_format;
-pub mod strutil;
