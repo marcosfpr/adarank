@@ -2,14 +2,15 @@
 /// MIT License
 ///
 use std::{
-    io::{ErrorKind, Write}, str::FromStr,
+    io::{ErrorKind, Write},
+    str::FromStr,
 };
 
 use colored::{ColoredString, Colorize};
 use env_logger;
 use log::Level;
 
-use super::format::{TableConfig, consts::DEFAULT_TABLE_LOGGER};
+use super::format::{consts::{DEFAULT_TABLE_LOGGER, DEFAULT_INNER_TABLE_LOGGER}, TableConfig};
 
 /// Internal utility for writing data into a string
 pub struct StringWriter {
@@ -56,7 +57,7 @@ impl Write for StringWriter {
 const LOG_PREFIX_SIZE: usize = 28;
 
 fn shift_prefix(writer: &mut StringWriter) {
-     // Write LOG_PREFIX_SIZE spaces to the beginning of the line
+    // Write LOG_PREFIX_SIZE spaces to the beginning of the line
     for _ in 0..LOG_PREFIX_SIZE {
         writer.write(b" ").unwrap();
     }
@@ -85,7 +86,7 @@ pub fn init_logger() {
 ///
 fn color_by_level(level: Level) -> ColoredString {
     match level {
-        Level::Error => "ERR".red(),
+        Level::Error => "ERR".bold().red(),
         Level::Warn => "WAR".yellow(),
         Level::Info => "INF".blue(),
         Level::Debug => "DBG".green(),
@@ -95,39 +96,49 @@ fn color_by_level(level: Level) -> ColoredString {
 
 ///
 /// Utility function that generates a log header based on the `TableConfig` specifications.
-/// 
+///
 pub fn log_table_header(header: Vec<&str>, config: &TableConfig) -> String {
-
     let mut writer = StringWriter::new();
 
-    DEFAULT_TABLE_LOGGER.log_separator_with_config(&mut writer, &config, true).unwrap();
+    DEFAULT_TABLE_LOGGER
+        .log_separator_with_config(&mut writer, &config, true)
+        .unwrap();
 
     shift_prefix(&mut writer);
 
-    DEFAULT_TABLE_LOGGER.log_value_with_config(&mut writer, header, &config).unwrap();
+    DEFAULT_INNER_TABLE_LOGGER
+        .log_value_with_config(
+            &mut writer,
+            header.iter().map(|h| h.bold().cyan()).collect(),
+            &config,
+        )
+        .unwrap();
 
     shift_prefix(&mut writer);
 
-    DEFAULT_TABLE_LOGGER.log_separator_with_config(&mut writer, &config, false).unwrap();
+    DEFAULT_TABLE_LOGGER
+        .log_separator_with_config(&mut writer, &config, false)
+        .unwrap();
 
     String::from_str(writer.as_string()).unwrap()
-
 }
 
 ///
 /// Utility function that generates a log row based on the `TableConfig` specifications.
 /// It appends a line separator after the row.
-/// 
+///
 pub fn log_table_row<F: ToString>(row: Vec<F>, config: &TableConfig) -> String {
-
     let mut writer = StringWriter::new();
 
-    DEFAULT_TABLE_LOGGER.log_value_with_config(&mut writer, row, &config).unwrap();
+    DEFAULT_INNER_TABLE_LOGGER
+        .log_value_with_config(&mut writer, row, &config)
+        .unwrap();
 
     shift_prefix(&mut writer);
 
-    DEFAULT_TABLE_LOGGER.log_separator_with_config(&mut writer, &config, false).unwrap();
+    DEFAULT_TABLE_LOGGER
+        .log_separator_with_config(&mut writer, &config, false)
+        .unwrap();
 
     String::from_str(writer.as_string()).unwrap()
-
 }

@@ -324,6 +324,9 @@ pub mod consts {
         /// The default TableLogger
         pub static ref DEFAULT_TABLE_LOGGER: super::TableLogger = super::TableLogger::default();
 
+        /// The default TableLogger for inner values
+        pub static ref DEFAULT_INNER_TABLE_LOGGER: super::TableLogger = super::TableLogger::new('-', '|', '+', '+');
+
     }
 }
 
