@@ -17,33 +17,11 @@ fn main() {
     error!("{}", "Error message");
     trace!("{}", "Trace message");
 
-    let table = TableLogger::default();
-    let mut writer = StringWriter::new();
-
-    table
-        .log_separator(&mut writer, &[10, 8, 5], (2, 2), true, true, true)
-        .unwrap();
-
-    table
-        .log_value(
-            &mut writer,
-            vec!["foo", "bar", "baz"],
-            &[10, 8, 5],
-            (2, 2),
-            Alignment::Center,
-            true,
-            true,
-            true,
-        )
-        .unwrap();
-
-    table
-        .log_separator(&mut writer, &[10, 8, 5], (2, 2), true, true, true)
-        .unwrap();
-
-    info!("\n{}", writer.as_string());
-
     let config = TableConfig::new(vec![10, 8, 5], (2, 2), Alignment::Center, true, true, true);
 
-    info!("\n{}", log_table_header(vec!["foo", "bah", "zoo"], &config));
+    info!("{}", log_table_header(vec!["foo", "bah", "zoo"], &config));
+    debug!("{}", log_table_row(vec![1, 2, 3], &config));
+    debug!("{}", log_table_row(vec![4, 5,63], &config));
+    info!("{}", log_table_row(vec![1, 22, 33], &config));
+    info!("{}", log_table_row(vec![11, 200, 3], &config));
 }

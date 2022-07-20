@@ -173,6 +173,7 @@ impl TableLogger {
         colsep: bool,
         lborder: bool,
         rborder: bool,
+        newline: bool,
     ) -> Result<usize, Error> {
         if lborder {
             out.write_all(Utf8Char::from(self.ljunc).as_bytes())?;
@@ -191,7 +192,10 @@ impl TableLogger {
             out.write_all(Utf8Char::from(self.rjunc).as_bytes())?;
         }
 
-        out.write_all(NEWLINE)?;
+        if newline {
+            out.write_all(NEWLINE)?;
+        }
+
         Ok(1)
     }
 
@@ -199,6 +203,7 @@ impl TableLogger {
         &self,
         out: &mut T,
         config: &TableConfig,
+        newline: bool,
     ) -> Result<usize, Error> {
         self.log_separator(
             out,
@@ -207,6 +212,7 @@ impl TableLogger {
             config.colsep,
             config.lborder,
             config.rborder,
+            newline
         )
     }
 
