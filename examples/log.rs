@@ -1,8 +1,5 @@
-#[macro_use]
-extern crate ltrs;
-
 use ltrs::utils::{
-    format::{Alignment, TableConfig, TableLogger},
+    format::{Alignment, TableConfig},
     logging::*,
 };
 

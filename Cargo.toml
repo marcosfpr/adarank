@@ -21,3 +21,7 @@ colored = "2.0.0"
 encode_unicode = "0.3.6"
 unicode-width = "0.1.9"
 lazy_static = "1.4.0"
+rand = "0.8.5"
+
+[dev-dependencies]
+approx = "0.5.1"

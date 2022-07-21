@@ -157,6 +157,7 @@ impl fmt::Display for RankList {
 /// `DataPoint`s represented by a tuple of label,  query_id,
 /// features and the optional description.
 ///
+#[macro_export]
 macro_rules! rl {
     ($(($label:expr, $query_id:expr, $features:expr)),*) => {
         {

@@ -6,7 +6,9 @@ use crate::ranklist::RankList;
 ///
 /// MAP (Mean Average Precision) for a set of queries is the mean of the average precision
 /// scores for each query.
-/// See [Wikipedia](https://en.wikipedia.org/wiki/Evaluation_measures_(information_retrieval)#Mean_average_precision) for more information.
+/// The average precision score is the sum of the precision scores for each k, divided by
+/// the number of positive labels.
+/// See [Medium](https://towardsdatascience.com/breaking-down-mean-average-precision-map-ae462f623a52) for more information.
 ///
 #[derive(Debug, Clone)]
 struct MAP;
@@ -43,7 +45,26 @@ mod tests {
     use super::*;
     use crate::datapoint::DataPoint;
     use crate::ranklist::RankList;
+    use crate::rl;
+    use crate::utils::randomize;
+
+    use approx::relative_eq;
 
     #[test]
-    fn test_map() {}
+    fn test_map() {
+        let ranklist = rl!(
+            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc1"),
+            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc2"),
+            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc3"),
+            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc4"),
+            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc5"),
+            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc6")
+        );
+
+        let map = MAP;
+
+        let map_score = map.evaluate_ranklist(&ranklist);
+
+        assert!(relative_eq!(map_score, 0.588, max_relative = 0.01f64));
+    }
 }

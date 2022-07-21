@@ -9,7 +9,7 @@ use crate::ranklist::RankList;
 /// See [Wikipedia](https://en.wikipedia.org/wiki/Precision_and_recall#Precision) for more information.
 ///
 #[derive(Debug, Clone)]
-struct Precision {
+pub struct Precision {
     limit: usize,
 }
 
@@ -59,5 +59,53 @@ impl Evaluator for Precision {
             0 => 0.0,
             _ => precision_score / self.limit as f64,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use crate::datapoint::DataPoint;
+    use crate::ranklist::RankList;
+    use crate::rl;
+    use crate::utils::randomize;
+
+    use approx::relative_eq;
+
+    #[test]
+    fn test_precision() {
+        let ranklist = rl!(
+            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc1"),
+            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc2"),
+            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc3"),
+            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc4"),
+            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc5"),
+            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc6")
+        );
+
+        let p1 = Precision::new(1);
+        let mut p3 = Precision::new(3);
+        let p5 = Precision::new(5);
+
+        let p1_score = p1.evaluate_ranklist(&ranklist);
+        let p3_score = p3.evaluate_ranklist(&ranklist);
+        let p5_score = p5.evaluate_ranklist(&ranklist);
+
+        assert!(relative_eq!(p1_score, 0.0, max_relative = 0.01f64));
+        assert!(relative_eq!(p3_score, 0.66, max_relative = 0.01f64));
+        assert!(relative_eq!(p5_score, 0.6, max_relative = 0.01f64));
+
+        assert_eq!(p1.limit(), 1);
+        assert_eq!(p3.limit(), 3);
+        assert_eq!(p5.limit(), 5);
+
+        p3.set_limit(2);
+        assert_eq!(p3.limit(), 2);
+        assert!(relative_eq!(
+            p3.evaluate_ranklist(&ranklist),
+            0.5,
+            max_relative = 0.01f64
+        ));
     }
 }

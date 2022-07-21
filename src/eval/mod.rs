@@ -1,6 +1,6 @@
-pub mod map;
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
+pub mod map;
 pub mod precision;
 
 use crate::error::LtrError;
