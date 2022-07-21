@@ -10,7 +10,10 @@ use colored::{ColoredString, Colorize};
 use env_logger;
 use log::Level;
 
-use super::format::{consts::{DEFAULT_TABLE_LOGGER, DEFAULT_INNER_TABLE_LOGGER}, TableConfig};
+use super::format::{
+    consts::{DEFAULT_INNER_TABLE_LOGGER, DEFAULT_TABLE_LOGGER},
+    TableConfig,
+};
 
 /// Internal utility for writing data into a string
 pub struct StringWriter {

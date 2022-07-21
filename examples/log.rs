@@ -2,7 +2,7 @@
 extern crate ltrs;
 
 use ltrs::utils::{
-    format::{Alignment, TableLogger, TableConfig},
+    format::{Alignment, TableConfig, TableLogger},
     logging::*,
 };
 
@@ -21,7 +21,7 @@ fn main() {
 
     info!("{}", log_table_header(vec!["foo", "bah", "zoo"], &config));
     debug!("{}", log_table_row(vec![1, 2, 3], &config));
-    debug!("{}", log_table_row(vec![4, 5,63], &config));
+    debug!("{}", log_table_row(vec![4, 5, 63], &config));
     info!("{}", log_table_row(vec![1, 22, 33], &config));
     info!("{}", log_table_row(vec![11, 200, 3], &config));
 }

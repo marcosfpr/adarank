@@ -212,7 +212,7 @@ impl TableLogger {
             config.colsep,
             config.lborder,
             config.rborder,
-            newline
+            newline,
         )
     }
 
@@ -340,7 +340,7 @@ mod tests {
 
         let sep = TableLogger::default();
 
-        sep.log_separator(&mut writer, &[10, 8, 5], (2, 2), true, true, true)
+        sep.log_separator(&mut writer, &[10, 8, 5], (2, 2), true, true, true, true)
             .unwrap();
 
         assert_eq!(
