@@ -62,19 +62,6 @@ impl TableConfig {
             rborder,
         }
     }
-
-    /// Create a `TableConfig` based on the header values
-    pub fn from_header(
-        header: &[&str],
-        padding: (usize, usize),
-        align: Alignment,
-        colsep: bool,
-        lborder: bool,
-        rborder: bool,
-    ) -> TableConfig {
-        let col_width = header.iter().map(|s| s.width()).collect();
-        TableConfig::new(col_width, padding, align, colsep, lborder, rborder)
-    }
 }
 
 /// Table print simplified
