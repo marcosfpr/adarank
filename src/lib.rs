@@ -11,7 +11,6 @@ pub mod loader;
 pub mod ranklist;
 pub mod utils;
 pub mod ranker;
-pub mod learner;
 
 ///
 /// For simplicity, we will use a DataSet as a vector of RankLists.

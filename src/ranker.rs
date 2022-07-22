@@ -1,16 +1,29 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 
-use crate::{datapoint::DataPoint, ranklist::RankList, DataSet};
+use crate::{datapoint::DataPoint, ranklist::RankList, DataSet, error::LtrError};
+
+
+/// Idea
+/// Trait Ranker: predict + rank
+/// Trait Learner: fit + other learning stuff
+/// Trait Serializable: save to json
+/// 
+/// Models: T : Ranker + Learner + Serializable
 
 ///
-/// The Ranker trait represents the basic behavior for
+/// The `Ranker` trait represents the basic behavior for
 /// all models implemented in the lt.rs crate.
 /// 
-/// The capabilities of a LTR ranker is to generate a score for
-///  a single `DataPoint` and to provide an entire rank for
-///  a `RankList` or a `DataSet`.
+/// The models should be able to fit a `DataSet` and
+/// predict a score for a `DataPoint`.
+/// 
 pub trait Ranker {
+
+    ///
+    /// Fit the model to a `DataSet`.
+    /// 
+    fn fit(&mut self) -> Result<(), LtrError>;
 
     ///
     /// Generates a score for a `DataPoint`.
