@@ -15,15 +15,10 @@ use crate::{datapoint::DataPoint, ranklist::RankList, DataSet, error::LtrError};
 /// The `Ranker` trait represents the basic behavior for
 /// all models implemented in the lt.rs crate.
 /// 
-/// The models should be able to fit a `DataSet` and
-/// predict a score for a `DataPoint`.
+/// The models should be able to predict a `DataSet` and
+/// rank based on the scores.
 /// 
 pub trait Ranker {
-
-    ///
-    /// Fit the model to a `DataSet`.
-    /// 
-    fn fit(&mut self) -> Result<(), LtrError>;
 
     ///
     /// Generates a score for a `DataPoint`.
