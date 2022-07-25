@@ -118,17 +118,18 @@ impl RankList {
 }
 
 ///
-/// `RankList`s are iterable over `DataPoint`s.
+/// `RankList`s are iterable over `&DataPoint`s.
 /// This allows for easy iteration over the `RankList`.
 ///
-impl IntoIterator for RankList {
-    type Item = DataPoint;
-    type IntoIter = std::vec::IntoIter<DataPoint>;
+impl<'a> IntoIterator for &'a RankList {
+    type Item = &'a DataPoint;
+    type IntoIter = ::std::slice::Iter<'a, DataPoint>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.data_points.into_iter()
+        self.data_points.iter()
     }
-}
+}   
+
 
 ///
 /// We can interpret a `RankList` as a `Vec` of `DataPoint`s.

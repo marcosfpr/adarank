@@ -22,3 +22,4 @@ fn main() {
     info!("{}", log_table_row(vec![1, 22, 33], &config));
     info!("{}", log_table_row(vec![11, 200, 3], &config));
 }
+

@@ -1,8 +1,8 @@
-use crate::{error::LtrError, DataSet, eval::Evaluator};
-
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
+
+use crate::{error::LtrError, DataSet, eval::Evaluator};
 
 ///
 /// This trait represents the basic behavior for
@@ -23,12 +23,12 @@ pub trait Learner : DatasetConfigurable + MetricConfigurable + FeaturesConfigura
     ///
     /// The `Learner`s should retrieve the training process score.
     /// 
-    fn score(&self) -> Result<f64, LtrError>;
+    fn score(&self) -> Result<f32, LtrError>;
 
     ///
     /// The `Learner`s should retrieve the validation process score.
     /// 
-    fn validation_score(&self) -> Result<f64, LtrError>;
+    fn validation_score(&self) -> Result<f32, LtrError>;
 
 }
 
@@ -40,7 +40,7 @@ pub trait Learner : DatasetConfigurable + MetricConfigurable + FeaturesConfigura
 /// The validation `DataSet` is used to validate the model during training.
 /// TODO: document this
 ///  
-trait  DatasetConfigurable{
+pub trait  DatasetConfigurable{
     
     ///
     /// The `Learner`s should have a training and a optional validation `DataSet`.
@@ -65,13 +65,13 @@ trait  DatasetConfigurable{
 /// the metrics used to evaluate the model.
 /// 
 /// TODO: document this
-trait MetricConfigurable{
+pub trait MetricConfigurable{
     
     ///
     /// The `Learner`s should allow the user to customize
     /// the metrics used to evaluate the model.
     /// 
-    fn set_metric(&mut self, metric: dyn Evaluator);
+    fn set_metric(&mut self, metric: &dyn Evaluator);
 
 }
 
@@ -80,7 +80,7 @@ trait MetricConfigurable{
 /// The `Learner`s should allow the user to customize
 /// the features used to train the model.
 /// TODO: document this
-trait FeaturesConfigurable{
+pub trait FeaturesConfigurable{
     
     ///
     /// The `Learner`s should allow the user to customize
@@ -98,7 +98,7 @@ trait FeaturesConfigurable{
 ///
 /// The `Learner`s should allow the user to save the model to a file.
 /// TODO: document this
-trait FileSerializable {
+pub trait FileSerializable {
 
     ///
     /// The `Learner`s should allow the user to save the model to a file.

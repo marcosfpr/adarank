@@ -6,12 +6,7 @@ use std::ops::Index;
 
 use serde::{Deserialize, Serialize};
 
-use crate::error::LtrError;
-
-///
-/// A particular Feature for lt.rs is just a floating point value.
-/// The feature_value is the value of the feature.
-type Feature = f32;
+use crate::{error::LtrError, Feature};
 
 ///
 /// A DataPoint is a single training instance (Like in RankLib).

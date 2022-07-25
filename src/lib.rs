@@ -12,6 +12,13 @@ pub mod ranklist;
 pub mod utils;
 pub mod ranker;
 pub mod learner;
+pub mod ensemble;
+
+
+///
+/// A particular Feature for lt.rs is just a floating point value.
+/// The feature_value is the value of the feature.
+type Feature = f32;
 
 ///
 /// For simplicity, we will use a DataSet as a vector of RankLists.

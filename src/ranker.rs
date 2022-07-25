@@ -1,7 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 
-use crate::{datapoint::DataPoint, ranklist::RankList, DataSet, error::LtrError};
+use crate::{datapoint::DataPoint, ranklist::RankList, DataSet};
 
 
 /// Idea
@@ -23,17 +23,17 @@ pub trait Ranker {
     ///
     /// Generates a score for a `DataPoint`.
     /// 
-    fn predict(&self, datapoint: &DataPoint) -> f64;
+    fn predict(&self, datapoint: &DataPoint) -> f32;
 
     ///
     /// Perform ranking on a `RankList`.
     /// 
     fn rank(&self, ranklist: &mut RankList) {
-        let mut score_per_index: Vec<(usize, f64)> = ranklist
+        let mut score_per_index: Vec<(usize, f32)> = ranklist
             .into_iter()
             .enumerate()
             .map(|(i, dp)| (i, self.predict(&dp)))
-            .collect();
+            .collect(); 
         
         // Sort by score
         score_per_index.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
