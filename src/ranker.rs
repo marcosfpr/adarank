@@ -27,12 +27,9 @@ pub trait Ranker {
 
     ///
     /// Perform ranking on a `RankList`.
-    /// Returns a `RankList` shallow clone with the datapoints ranked.
     /// 
-    fn rank(&self, ranklist: &RankList) -> RankList {
-        let mut ranked_datapoints = ranklist.clone();
-
-        let mut score_per_index: Vec<(usize, f32)> = ranked_datapoints
+    fn rank(&self, ranklist: &mut RankList) {
+        let mut score_per_index: Vec<(usize, f32)> = ranklist
             .into_iter()
             .enumerate()
             .map(|(i, dp)| (i, self.predict(&dp)))
@@ -42,9 +39,7 @@ pub trait Ranker {
         score_per_index.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 
         // Reorder the ranklist based on the index of the sorted score
-        ranked_datapoints.permute(score_per_index.iter().map(|&(i, _)| i).collect());
-
-        ranked_datapoints
+        ranklist.permute(score_per_index.iter().map(|&(i, _)| i).collect());
     }
 
 

@@ -1,7 +1,6 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 use std::fmt;
-use std::cell::RefCell;
 use std::fmt::Formatter;
 
 use serde::{Deserialize, Serialize};
@@ -16,10 +15,9 @@ use crate::error::LtrError;
 ///
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankList {
-    ///
     /// The list of `DataPoint`s.
     ///
-    data_points: RefCell<Vec<DataPoint>>,
+    data_points: Vec<DataPoint>,
 }
 
 impl RankList {
@@ -30,7 +28,7 @@ impl RankList {
     /// * `data_points` - The list of `DataPoint`s.
     ///
     pub fn new(data_points: Vec<DataPoint>) -> RankList {
-        RankList { data_points: RefCell::new(data_points)}
+        RankList { data_points }
     }
 
     /// Get the length of the `RankList`.
@@ -40,7 +38,7 @@ impl RankList {
     /// The length of the `RankList`.
     ///
     pub fn len(&self) -> usize {
-        self.data_points.borrow().len()
+        self.data_points.len()
     }
 
     ///
@@ -55,9 +53,8 @@ impl RankList {
     /// The `DataPoint` at the given index.
     ///
     pub fn get(&self, index: usize) -> Result<&DataPoint, LtrError> {
-        let data_points = self.data_points.borrow();
-        if index < data_points.len() {
-            Ok(&data_points[index])
+        if index < self.data_points.len() {
+            Ok(&self.data_points[index])
         } else {
             Err(LtrError::RankListIndexOutOfBounds)
         }
@@ -71,10 +68,9 @@ impl RankList {
     /// * `index` - The index of the `DataPoint` to be set.
     /// * `data_point` - The `DataPoint` to be set.
     ///
-    pub fn set(&self, index: usize, data_point: DataPoint) -> Result<(), LtrError> {
-        let mut data_points = self.data_points.borrow_mut();
-        if index < data_points.len() {
-            data_points[index] = data_point;
+    pub fn set(&mut self, index: usize, data_point: DataPoint) -> Result<(), LtrError> {
+        if index < self.data_points.len() {
+            self.data_points[index] = data_point;
             Ok(())
         } else {
             Err(LtrError::RankListIndexOutOfBounds)
@@ -84,10 +80,9 @@ impl RankList {
     ///
     /// Rank the `RankList` according to the given `DataPoint`s.
     ///
-    pub fn rank(&self) -> Result<(), LtrError> {
-        let mut data_points = self.data_points.borrow();
+    pub fn rank(&mut self) -> Result<(), LtrError> {
         // Reverse sorting
-        data_points.sort_by(|a, b| b.partial_cmp(&a).unwrap());
+        self.data_points.sort_by(|a, b| b.partial_cmp(&a).unwrap());
         Ok(())
     }
 
@@ -97,9 +92,8 @@ impl RankList {
     /// # Arguments
     /// * `feature_index` - The index of the feature to be used to sort the `RankList`.
     ///
-    pub fn rank_by_feature(&self, feature_index: usize) -> Result<(), LtrError> {
-        let mut data_points = self.data_points.borrow_mut();
-        data_points.sort_by(|a, b| {
+    pub fn rank_by_feature(&mut self, feature_index: usize) -> Result<(), LtrError> {
+        self.data_points.sort_by(|a, b| {
             b.get_feature(feature_index)
                 .unwrap()
                 .partial_cmp(&a.get_feature(feature_index).unwrap())
@@ -114,13 +108,12 @@ impl RankList {
     /// # Arguments
     /// * `permutation` - The permutation vector.
     ///
-    pub fn permute(&self, permutation: Vec<usize>) {
-        let mut data_points = self.data_points.borrow_mut();
-        let mut new_data_points = Vec::with_capacity(data_points.len());
+    pub fn permute(&mut self, permutation: Vec<usize>) {
+        let mut new_data_points = Vec::with_capacity(self.data_points.len());
         for i in permutation {
-            new_data_points.push(data_points[i].clone());
+            new_data_points.push(self.data_points[i].clone());
         }
-        *data_points = new_data_points;
+        self.data_points = new_data_points;
     }
 }
 
@@ -133,8 +126,7 @@ impl<'a> IntoIterator for &'a RankList {
     type IntoIter = ::std::slice::Iter<'a, DataPoint>;
 
     fn into_iter(self) -> Self::IntoIter {
-        let data_points = self.data_points.borrow();
-        data_points.iter()
+        self.data_points.iter()
     }
 }   
 
@@ -144,7 +136,7 @@ impl<'a> IntoIterator for &'a RankList {
 ///
 impl From<Vec<DataPoint>> for RankList {
     fn from(data_points: Vec<DataPoint>) -> RankList {
-        RankList { data_points: RefCell::new(data_points) }
+        RankList { data_points }
     }
 }
 
@@ -156,7 +148,7 @@ impl fmt::Display for RankList {
         write!(
             f,
             "RankList object with {} data points",
-            self.data_points.borrow().len()
+            self.data_points.len()
         )
     }
 }
