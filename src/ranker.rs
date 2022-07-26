@@ -28,7 +28,7 @@ pub trait Ranker {
     ///
     /// Perform ranking on a `RankList`.
     /// 
-    fn rank(&self, ranklist: &mut RankList) {
+    fn rank(&self, ranklist: &RankList) {
         let mut score_per_index: Vec<(usize, f32)> = ranklist
             .into_iter()
             .enumerate()
@@ -46,8 +46,8 @@ pub trait Ranker {
     ///
     /// Perform ranking on a `DataSet`.
     /// 
-    fn rank_dataset(&self, dataset: &mut DataSet) {
-        for ranklist in dataset.iter_mut() {
+    fn rank_dataset(&self, dataset: &DataSet) {
+        for ranklist in dataset.iter() {
             self.rank(ranklist);
         }
     }

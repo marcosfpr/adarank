@@ -1,3 +1,4 @@
+use std::cell::{RefCell, Ref};
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 use std::fmt;
@@ -17,7 +18,7 @@ use crate::error::LtrError;
 pub struct RankList {
     /// The list of `DataPoint`s.
     ///
-    data_points: Vec<DataPoint>,
+    data_points: RefCell<Vec<DataPoint>>,
 }
 
 impl RankList {
@@ -28,7 +29,9 @@ impl RankList {
     /// * `data_points` - The list of `DataPoint`s.
     ///
     pub fn new(data_points: Vec<DataPoint>) -> RankList {
-        RankList { data_points }
+        RankList {
+            data_points: RefCell::new(data_points),
+        }
     }
 
     /// Get the length of the `RankList`.
@@ -38,7 +41,7 @@ impl RankList {
     /// The length of the `RankList`.
     ///
     pub fn len(&self) -> usize {
-        self.data_points.len()
+        self.data_points.borrow().len()
     }
 
     ///
@@ -52,9 +55,9 @@ impl RankList {
     ///
     /// The `DataPoint` at the given index.
     ///
-    pub fn get(&self, index: usize) -> Result<&DataPoint, LtrError> {
-        if index < self.data_points.len() {
-            Ok(&self.data_points[index])
+    pub fn get(&self, index: usize) -> Result<Ref<DataPoint>, LtrError> {
+        if index < self.len() {
+            Ok(Ref::map(self.data_points.borrow(), |dp| &dp[index]))
         } else {
             Err(LtrError::RankListIndexOutOfBounds)
         }
@@ -68,9 +71,9 @@ impl RankList {
     /// * `index` - The index of the `DataPoint` to be set.
     /// * `data_point` - The `DataPoint` to be set.
     ///
-    pub fn set(&mut self, index: usize, data_point: DataPoint) -> Result<(), LtrError> {
-        if index < self.data_points.len() {
-            self.data_points[index] = data_point;
+    pub fn set(&self, index: usize, data_point: DataPoint) -> Result<(), LtrError> {
+        if index < self.len() {
+            self.data_points.borrow_mut()[index] = data_point;
             Ok(())
         } else {
             Err(LtrError::RankListIndexOutOfBounds)
@@ -80,9 +83,9 @@ impl RankList {
     ///
     /// Rank the `RankList` according to the given `DataPoint`s.
     ///
-    pub fn rank(&mut self) -> Result<(), LtrError> {
+    pub fn rank(&self) -> Result<(), LtrError> {
         // Reverse sorting
-        self.data_points.sort_by(|a, b| b.partial_cmp(&a).unwrap());
+        self.data_points.borrow_mut().sort_by(|a, b| b.partial_cmp(&a).unwrap());
         Ok(())
     }
 
@@ -92,8 +95,8 @@ impl RankList {
     /// # Arguments
     /// * `feature_index` - The index of the feature to be used to sort the `RankList`.
     ///
-    pub fn rank_by_feature(&mut self, feature_index: usize) -> Result<(), LtrError> {
-        self.data_points.sort_by(|a, b| {
+    pub fn rank_by_feature(&self, feature_index: usize) -> Result<(), LtrError> {
+        self.data_points.borrow_mut().sort_by(|a, b| {
             b.get_feature(feature_index)
                 .unwrap()
                 .partial_cmp(&a.get_feature(feature_index).unwrap())
@@ -108,12 +111,34 @@ impl RankList {
     /// # Arguments
     /// * `permutation` - The permutation vector.
     ///
-    pub fn permute(&mut self, permutation: Vec<usize>) {
-        let mut new_data_points = Vec::with_capacity(self.data_points.len());
+    pub fn permute(&self, permutation: Vec<usize>) {
+        let mut new_data_points = Vec::with_capacity(self.data_points.borrow().len());
         for i in permutation {
-            new_data_points.push(self.data_points[i].clone());
+            match self.data_points.borrow().get(i) {
+                Some(dp) => new_data_points.push(dp.clone()),
+                None => (),
+            }
         }
-        self.data_points = new_data_points;
+        self.data_points.replace(new_data_points);
+    }
+}
+
+
+pub struct RankListIter<'a> {
+    rank_list: &'a RankList,
+    index: usize,
+}
+
+impl<'a> Iterator for RankListIter<'a> {
+    type Item = Ref<'a, DataPoint>;
+
+    fn next(&mut self) -> Option<Ref<'a, DataPoint>> {
+        if self.index < self.rank_list.len() {
+            self.index += 1;
+            Some(Ref::map(self.rank_list.data_points.borrow(), |dp| &dp[self.index - 1]))
+        } else {
+            None
+        }
     }
 }
 
@@ -122,21 +147,23 @@ impl RankList {
 /// This allows for easy iteration over the `RankList`.
 ///
 impl<'a> IntoIterator for &'a RankList {
-    type Item = &'a DataPoint;
-    type IntoIter = ::std::slice::Iter<'a, DataPoint>;
+    type Item = Ref<'a, DataPoint>;
+    type IntoIter = RankListIter<'a>;
 
     fn into_iter(self) -> Self::IntoIter {
-        self.data_points.iter()
+        RankListIter {
+            rank_list: self,
+            index: 0,
+        }
     }
-}   
-
+}
 
 ///
 /// We can interpret a `RankList` as a `Vec` of `DataPoint`s.
 ///
 impl From<Vec<DataPoint>> for RankList {
     fn from(data_points: Vec<DataPoint>) -> RankList {
-        RankList { data_points }
+        RankList { data_points: RefCell::new(data_points) }
     }
 }
 
@@ -148,7 +175,7 @@ impl fmt::Display for RankList {
         write!(
             f,
             "RankList object with {} data points",
-            self.data_points.len()
+            self.data_points.borrow().len()
         )
     }
 }
@@ -225,7 +252,7 @@ mod tests {
         assert_eq!(string_representation, "RankList object with 3 data points");
 
         // Ranking
-        let mut partial_rank_list = rank_list.clone();
+        let partial_rank_list = rank_list.clone();
         partial_rank_list.rank_by_feature(1).unwrap();
         assert_eq!(partial_rank_list.len(), 3);
         assert_eq!(
@@ -241,7 +268,7 @@ mod tests {
             "doc1"
         );
 
-        let mut full_rank_list = rank_list.clone();
+        let full_rank_list = rank_list.clone();
         full_rank_list.rank().unwrap();
         assert_eq!(full_rank_list.len(), 3);
         assert_eq!(
@@ -258,7 +285,7 @@ mod tests {
         );
 
         // Permutation
-        let mut permuted_rank_list = rank_list.clone();
+        let permuted_rank_list = rank_list.clone();
         let permutation = vec![1, 2, 0];
         permuted_rank_list.permute(permutation);
         assert_eq!(
@@ -287,7 +314,7 @@ mod tests {
         );
 
         //  Set
-        let mut set_rank_list = rank_list.clone();
+        let set_rank_list = rank_list.clone();
         set_rank_list
             .set(
                 0,
