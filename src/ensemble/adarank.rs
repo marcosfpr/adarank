@@ -173,9 +173,9 @@ impl AdaRank {
         weights
     }
 
-    fn evaluate_weak_ranker(&mut self, ranker: &WeakRanker) -> f32 {
+    fn evaluate_weak_ranker(&self, ranker: &WeakRanker) -> f32 {
         let mut score = 0.0;
-        for (i, sample) in self.training_dataset.iter_mut().enumerate() {
+        for (i, sample) in self.training_dataset.iter().enumerate() {
             ranker.rank(sample);
             score += self.scorer.evaluate_ranklist(sample) * self.sample_weights[i];
         }
@@ -190,7 +190,7 @@ impl AdaRank {
             if self.used_features.contains(feature) {
                 continue;
             }
-            let mut ranker = WeakRanker::new(*feature);
+            let ranker = WeakRanker::new(*feature);
             let score = self.evaluate_weak_ranker(&ranker);
             if score > best_score {
                 best_score = score;
@@ -219,8 +219,8 @@ impl AdaRank {
             };
 
             // 2nd step: evaluate the weak ranker (amount to say)
-            let num = 0.0f32;
-            let denom = 0.0f32;
+            let mut num = 0.0f32;
+            let mut denom = 0.0f32;
             for (ranklist, weight) in self.training_dataset.iter_mut().zip(self.sample_weights.iter()) {
                 best_weak_ranker.rank(ranklist);
                 let score = self.scorer.evaluate_ranklist(ranklist);

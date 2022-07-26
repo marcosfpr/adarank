@@ -9,7 +9,6 @@ use std::{
 };
 
 use encode_unicode::Utf8Char;
-use unicode_width::UnicodeWidthStr;
 
 #[cfg(any(not(windows), not(feature = "win_crlf")))]
 pub static NEWLINE: &[u8] = b"\n";
@@ -92,7 +91,7 @@ impl TableLogger {
     /// Return the display width of a unicode string.
     /// This functions takes ANSI-escaped color codes into account.
     pub fn display_width(text: &str) -> usize {
-        let width = UnicodeWidthStr::width(text);
+        let width = text.len();
         let mut state = 0;
         let mut hidden = 0;
 
