@@ -24,7 +24,7 @@ struct AdaRank {
     pub iter: u64,
     max_consecutive_selections: usize,
     consecutive_selections: usize,
-    previous_feature: isize,
+    previous_feature: usize,
     pub tolerance: f32,
     pub score_training: f32,
     pub score_validation: f32,
@@ -69,7 +69,7 @@ impl AdaRank {
             iter,
             max_consecutive_selections,
             consecutive_selections: 0,
-            previous_feature: -1,
+            previous_feature: usize::MAX,
             tolerance,
             score_training: 0.0,
             score_validation: 0.0,
@@ -182,7 +182,7 @@ impl AdaRank {
         score
     }
 
-    fn select_weak_ranker(&mut self) -> WeakRanker {
+    fn select_weak_ranker(&mut self) -> Option<WeakRanker> {
         let mut best_score = -1.0;
         let mut best_feature = 0;
 
@@ -197,11 +197,133 @@ impl AdaRank {
                 best_feature = *feature;
             }
         }
-        WeakRanker::new(best_feature)
+
+        if best_score < 0.0 {
+            return None;
+        }
+
+        Some(WeakRanker::new(best_feature))
     }
 
-    fn learn() {
-        todo!()
+    fn learn(&mut self) {
+        
+        for it in 0..self.iter{
+
+            // 1st step: select a weak ranker
+            let best_weak_ranker = match self.select_weak_ranker() {
+                Some(ranker) => ranker,
+                None => {
+                    log::error!("No weak ranker selected");
+                    break;
+                }
+            };
+
+            // 2nd step: evaluate the weak ranker (amount to say)
+            let num = 0.0f32;
+            let denom = 0.0f32;
+            for (ranklist, weight) in self.training_dataset.iter_mut().zip(self.sample_weights.iter()) {
+                best_weak_ranker.rank(ranklist);
+                let score = self.scorer.evaluate_ranklist(ranklist);
+                num += (1.0 + score) * *weight;
+                denom += (1.0 - score)* *weight;
+            }
+            
+            let amount_to_say = 0.5 * (num / denom).log10();
+            
+            // 3rd step: update the weights
+            self.rankers.push(best_weak_ranker);
+            self.ranker_weights.push(amount_to_say);
+
+            // 4th step: evaluate the ensemble on the training and validation dataset
+
+            let mut training_score = 0.0f32;
+            let mut total_score = 0.0f32;
+
+            let mut train_scores_list = Vec::new();
+            train_scores_list.reserve(self.training_dataset.len());
+
+            for ranklist in self.training_dataset.iter_mut() {
+                self.rank(ranklist);
+
+                let score = self.scorer.evaluate_ranklist(ranklist);
+                let exp_score = (-score).exp();
+
+                training_score += score;
+                total_score += exp_score;
+
+                train_scores_list.push(exp_score);
+
+            }
+
+            training_score /= self.training_dataset.len() as f32;
+            let delta = training_score + self.tolerance - self.previous_traning_score;
+
+            let mut status = if delta > 0.0 {
+                "OK"
+            } else {
+                "BAD"
+            };
+
+            let selected_feature = best_weak_ranker.feature_id;
+
+            if self.previous_feature == selected_feature {
+                self.consecutive_selections += 1;
+                if self.consecutive_selections == self.max_consecutive_selections {
+                    status = "SATURED";
+                    self.consecutive_selections = 0;
+                    self.used_features.insert(selected_feature);
+                }
+            }
+
+            self.previous_feature = selected_feature;
+
+
+            let mut val_score = 0.0f32;
+            if let Some(val_dataset) = &mut self.validation_dataset {
+                if !val_dataset.is_empty() && it % 1 == 0 {
+                    self.rank_dataset(val_dataset);
+                    val_score = match self.scorer.evaluate_dataset(val_dataset) {
+                        Ok(score) => score,
+                        Err(e) => {
+                            log::error!("Error evaluating validation dataset: {}", e);
+                            0.0
+                        }
+                    };
+                    if val_score > self.score_validation {
+                        self.score_validation = val_score;
+                        self.best_rankers = self.rankers.clone();
+                        self.best_weights = self.ranker_weights.clone();
+                    }
+                }
+            }
+
+            let train_improvement = training_score - self.previous_traning_score;
+            let validation_improvement = val_score - self.previous_validation_score;
+
+            log::debug!("{}", self.debug_line(
+                it as usize,
+                selected_feature,
+                training_score,
+                train_improvement,
+                val_score,
+                validation_improvement,
+                status,
+            ));
+
+            if delta <= 0.0 {
+                self.rankers.pop();
+                self.ranker_weights.pop();
+                break;
+            }
+
+            self.previous_traning_score = training_score;
+            self.previous_validation_score = val_score;
+
+            // 5th step: update the weights distribution
+            for (weight, score) in self.sample_weights.iter_mut().zip(train_scores_list.iter()) {
+                *weight *= (-amount_to_say * score).exp() / total_score;
+            }            
+        } 
     }
 }
 
@@ -209,16 +331,66 @@ impl Learner for AdaRank {
     fn fit(&mut self) -> Result<(), crate::error::LtrError> {
         log::debug!("{}", self.debug_header());
 
+        self.learn();
+
+        if !self.best_rankers.is_empty() {
+            self.rankers = std::mem::take(&mut self.best_rankers);
+            self.ranker_weights = std::mem::take(&mut self.best_weights);
+        }
+
+        if self.rankers.is_empty() {
+            return Err(crate::error::LtrError::NoRankers);
+        }
+
+        self.rank_dataset(&mut self.training_dataset);
+
+        match &mut self.validation_dataset {
+            Some(dataset) => {
+                self.rank_dataset(&mut dataset);
+                self.score_training = self.scorer.evaluate_dataset(&mut self.training_dataset).unwrap_or_else(|e| {
+                    log::error!("Error evaluating training dataset: {}", e);
+                    0.0
+                });
+            }
+            None => {
+                self.score_validation = 0.0;
+            }
+        }
+
+
         log::debug!("{}", self.get_results());
         Ok(())
     }
 
     fn score(&self) -> Result<f32, crate::error::LtrError> {
-        todo!()
+        if self.rankers.is_empty() {
+            return Err(crate::error::LtrError::NoRankers);
+        }
+        Ok(self.score_training)
     }
 
     fn validation_score(&self) -> Result<f32, crate::error::LtrError> {
-        todo!()
+        if self.rankers.is_empty() {
+            return Err(crate::error::LtrError::NoRankers);
+        }
+        Ok(self.score_validation)
+    }
+}
+
+impl Ranker for AdaRank {
+    fn predict(&self, datapoint: &crate::datapoint::DataPoint) -> f32 {
+        let mut score = 0.0;
+        for (ranker, weight) in self.rankers.iter().zip(self.ranker_weights.iter()) {
+            let feature_value: f32 = match datapoint.get_feature(ranker.feature_id) {
+                Ok(value) => *value,
+                Err(e) => {
+                    log::error!("Error getting feature value: {}", e);
+                    0.0
+                }
+            };
+            score += feature_value * weight;
+        }
+        score
     }
 }
 

@@ -4,6 +4,7 @@ use crate::ranker::Ranker;
 /// MIT License
 ///
 
+#[derive(Debug, Clone)]
 pub struct WeakRanker {
     pub feature_id: usize,
 }

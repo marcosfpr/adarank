@@ -2,7 +2,7 @@
 /// MIT License
 ///
 
-use crate::{error::LtrError, DataSet, eval::Evaluator};
+use crate::{error::LtrError, DataSet, eval::Evaluator, ranker::Ranker};
 
 ///
 /// This trait represents the basic behavior for
@@ -11,7 +11,7 @@ use crate::{error::LtrError, DataSet, eval::Evaluator};
 /// The models should be able to fit a `DataSet` and
 /// rank a `DataPoint`.
 /// 
-pub trait Learner : DatasetConfigurable + MetricConfigurable + FeaturesConfigurable + FileSerializable
+pub trait Learner : Ranker + DatasetConfigurable + MetricConfigurable + FeaturesConfigurable + FileSerializable
 {
 
     ///
