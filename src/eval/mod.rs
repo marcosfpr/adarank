@@ -19,7 +19,7 @@ use crate::DataSet;
 /// implement the function `evaluate_ranklist`, which evaluates the results
 /// generated  from a single `RankList`.
 ///
-pub trait Evaluator {
+pub trait Evaluator: ToString{
     ///
     /// Evaluates a `DataSet`
     ///
@@ -30,17 +30,17 @@ pub trait Evaluator {
     /// # Returns
     /// Average of the metric defined on the `evaluate_ranklist` function.
     ///
-    fn evaluate_dataset(&self, dataset: &DataSet) -> Result<f64, LtrError> {
+    fn evaluate_dataset(&self, dataset: &DataSet) -> Result<f32, LtrError> {
         if dataset.is_empty() {
             return Err(LtrError::EvaluationError(
                 "Error in Evaluator::evaluate_dataset: the dataset is empty.",
             ));
         }
-        let mut score = 0.0f64;
+        let mut score = 0.0f32;
         for ranklist in dataset {
             score += self.evaluate_ranklist(ranklist);
         }
-        Ok(score / dataset.len() as f64)
+        Ok(score / dataset.len() as f32)
     }
 
     ///
@@ -57,7 +57,7 @@ pub trait Evaluator {
     ///
     /// The metric value.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> f64;
+    fn evaluate_ranklist(&self, ranklist: &RankList) -> f32;
 }
 
 // todo: test this module

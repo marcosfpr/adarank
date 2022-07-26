@@ -1,5 +1,6 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
+
 use crate::eval::Evaluator;
 use crate::ranklist::RankList;
 
@@ -17,15 +18,15 @@ impl Evaluator for MAP {
     ///
     /// Evaluates the MAP for a set of queries.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> f64 {
-        let mut average_precision = 0.0f64;
+    fn evaluate_ranklist(&self, ranklist: &RankList) -> f32 {
+        let mut average_precision = 0.0f32;
         let mut num_relevant_docs = 0;
         for i in 0..ranklist.len() {
             match ranklist.get(i) {
                 Ok(dp) => {
                     if dp.get_label() > 0 {
                         num_relevant_docs += 1;
-                        average_precision += num_relevant_docs as f64 / (i as f64 + 1.0);
+                        average_precision += num_relevant_docs as f32 / (i as f32 + 1.0);
                     }
                 }
                 Err(_) => {
@@ -35,8 +36,14 @@ impl Evaluator for MAP {
         }
         match num_relevant_docs {
             0 => 0.0,
-            _ => average_precision / num_relevant_docs as f64,
+            _ => average_precision / num_relevant_docs as f32,
         }
+    }
+}
+
+impl ToString for MAP {
+    fn to_string(&self) -> String {
+        "MAP".to_string()
     }
 }
 
@@ -65,6 +72,6 @@ mod tests {
 
         let map_score = map.evaluate_ranklist(&ranklist);
 
-        assert!(relative_eq!(map_score, 0.588, max_relative = 0.01f64));
+        assert!(relative_eq!(map_score, 0.588, max_relative = 0.01f32));
     }
 }

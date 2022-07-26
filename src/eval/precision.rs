@@ -1,5 +1,6 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
+
 use crate::eval::Evaluator;
 use crate::ranklist::RankList;
 
@@ -41,8 +42,8 @@ impl Evaluator for Precision {
     ///
     /// Evaluates the precision of the given rank list.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> f64 {
-        let mut precision_score = 0.0f64;
+    fn evaluate_ranklist(&self, ranklist: &RankList) -> f32 {
+        let mut precision_score = 0.0f32;
         for i in 0..self.limit {
             match ranklist.get(i) {
                 Ok(dp) => {
@@ -57,8 +58,14 @@ impl Evaluator for Precision {
         }
         match self.limit {
             0 => 0.0,
-            _ => precision_score / self.limit as f64,
+            _ => precision_score / self.limit as f32,
         }
+    }
+}
+
+impl ToString for Precision {
+    fn to_string(&self) -> String {
+        format!("P@{}", self.limit)
     }
 }
 
@@ -92,9 +99,9 @@ mod tests {
         let p3_score = p3.evaluate_ranklist(&ranklist);
         let p5_score = p5.evaluate_ranklist(&ranklist);
 
-        assert!(relative_eq!(p1_score, 0.0, max_relative = 0.01f64));
-        assert!(relative_eq!(p3_score, 0.66, max_relative = 0.01f64));
-        assert!(relative_eq!(p5_score, 0.6, max_relative = 0.01f64));
+        assert!(relative_eq!(p1_score, 0.0, max_relative = 0.01f32));
+        assert!(relative_eq!(p3_score, 0.66, max_relative = 0.01f32));
+        assert!(relative_eq!(p5_score, 0.6, max_relative = 0.01f32));
 
         assert_eq!(p1.limit(), 1);
         assert_eq!(p3.limit(), 3);
@@ -105,7 +112,7 @@ mod tests {
         assert!(relative_eq!(
             p3.evaluate_ranklist(&ranklist),
             0.5,
-            max_relative = 0.01f64
+            max_relative = 0.01f32
         ));
     }
 }
