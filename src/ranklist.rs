@@ -326,4 +326,21 @@ mod tests {
             "doc23"
         );
     }
+
+    #[test]
+    fn test_ranklist_iterator() {
+        let rank_list = rl!(
+            (0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
+            (1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),
+            (0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3")
+        );
+
+        assert_eq!(rank_list.len(), 3);
+
+        for (i, data_point) in rank_list.into_iter().enumerate() {
+            assert_eq!(data_point.get_label(), rank_list.get(i).unwrap().get_label());
+            assert_eq!(data_point.get_query_id(), rank_list.get(i).unwrap().get_query_id());
+            assert_eq!(*data_point.get_feature(1).unwrap(), *rank_list.get(i).unwrap().get_feature(1).unwrap());
+        }
+    }
 }
