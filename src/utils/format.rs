@@ -27,6 +27,7 @@ pub enum Alignment {
 }
 
 /// Useful configs to logging tables
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct TableConfig {
     /// Column widths
     pub col_width: Vec<usize>,

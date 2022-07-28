@@ -12,7 +12,7 @@ use crate::ranklist::RankList;
 /// See [Medium](https://towardsdatascience.com/breaking-down-mean-average-precision-map-ae462f623a52) for more information.
 ///
 #[derive(Debug, Clone)]
-struct MAP;
+pub struct MAP;
 
 impl Evaluator for MAP {
     ///

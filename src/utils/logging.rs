@@ -97,6 +97,13 @@ fn color_by_level(level: Level) -> ColoredString {
     }
 }
 
+fn colored_config(config: &TableConfig) -> TableConfig {
+    // Sum 2 to all fields on the col_width field
+    let mut new_config = config.clone();
+    new_config.col_width = config.col_width.iter().map(|x| x + 2).collect();
+    new_config
+}
+
 ///
 /// Utility function that generates a log header based on the `TableConfig` specifications.
 ///
@@ -113,7 +120,7 @@ pub fn log_table_header(header: Vec<&str>, config: &TableConfig) -> String {
         .log_value_with_config(
             &mut writer,
             header.iter().map(|h| h.bold().cyan()).collect(),
-            &config,
+            &colored_config(&config),
         )
         .unwrap();
 

@@ -1,7 +1,8 @@
 use ltrs::utils::{
-    format::{Alignment, TableConfig},
-    logging::*,
+    format::{Alignment, TableConfig, consts::DEFAULT_INNER_TABLE_LOGGER, TableLogger},
+    logging::{*, self},
 };
+use colored::{ColoredString, Colorize};
 
 use log::{debug, error, info, trace, warn};
 
@@ -14,12 +15,26 @@ fn main() {
     error!("{}", "Error message");
     trace!("{}", "Trace message");
 
-    let config = TableConfig::new(vec![10, 8, 5], (2, 2), Alignment::Center, true, true, true);
+    let config = TableConfig::new(
+        vec![7, 8, 9, 9, 9, 9, 9],
+        (2, 2),
+        Alignment::Center,
+        true,
+        true,
+        true,
+    );
 
-    info!("{}", log_table_header(vec!["foo", "bah", "zoo"], &config));
-    debug!("{}", log_table_row(vec![1, 2, 3], &config));
-    debug!("{}", log_table_row(vec![4, 5, 63], &config));
-    info!("{}", log_table_row(vec![1, 22, 33], &config));
-    info!("{}", log_table_row(vec![11, 200, 3], &config));
+    log::debug!("{}", logging::log_table_header(
+        vec![
+            "#Iter",
+            "Feature",
+            "MAP-T",
+            "Improve-T",
+            "MAP-V",
+            "Improve-V",
+            "Status",
+        ],
+        &config,
+    ));
 }
 

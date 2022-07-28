@@ -26,4 +26,4 @@ rand = "0.8.5"
 approx = "0.5.1"
 
 [env]
-OHSUMED= {value="./benchmarks/OHSUMED", relative=true}
+OHSUMED = {value="./benchmarks/OHSUMED", relative=true}

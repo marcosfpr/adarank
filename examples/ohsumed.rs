@@ -1,5 +1,5 @@
 use ltrs::{
-    ensemble::adarank::AdaRank, eval::precision::Precision, learner::Learner, loader::LtrFormat,
+    ensemble::adarank::AdaRank, eval::{precision::Precision, map::MAP}, learner::Learner, loader::LtrFormat,
     utils::logging::init_logger, DataSet,
 };
 
@@ -23,7 +23,7 @@ fn main() {
 
     let mut adarank = AdaRank::new(
         ohsumed_dataset,
-        Box::new(Precision::new(5)),
+        Box::new(MAP),
         50,
         3,
         0.003,
