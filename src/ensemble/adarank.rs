@@ -50,7 +50,7 @@ impl AdaRank {
         iter: u64,
         max_consecutive_selections: usize,
         tolerance: f32,
-        features: Vec<usize>,
+        features: Option<Vec<usize>>,
         validation_dataset: Option<DataSet>,
     ) -> Self {
         let rankers = Vec::new();
@@ -61,6 +61,12 @@ impl AdaRank {
 
         let sample_weights = AdaRank::initialize_weights(training_dataset.len());
         let tcfg = AdaRank::table_config();
+
+        // If None, use all features -> range(0, training_dataset[0].len())
+        let features_used = match features {
+            Some(ft) => ft,
+            None => (1..training_dataset[0].len()+1).collect(),
+        };
 
         AdaRank {
             training_dataset,
@@ -73,7 +79,7 @@ impl AdaRank {
             tolerance,
             score_training: 0.0,
             score_validation: 0.0,
-            features,
+            features: features_used,
             previous_traning_score: 0.0,
             previous_validation_score: 0.0,
             sample_weights,
@@ -142,7 +148,7 @@ impl AdaRank {
 
         let mut results = String::new();
         results.push_str(&format!(
-            "{}",
+            "{}\n",
             logging::log_table_header(
                 vec![
                     format!("{}-T", self.scorer.to_string()).as_str(),
@@ -153,7 +159,7 @@ impl AdaRank {
         ));
         results.push_str(&format!(
             "{}",
-            logging::log_table_row(
+            logging::log_shifted_table_row(
                 vec![
                     format!("{}", self.score_training).as_str(),
                     format!("{}", self.score_validation).as_str(),

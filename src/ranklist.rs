@@ -59,7 +59,7 @@ impl RankList {
         if index < self.len() {
             Ok(Ref::map(self.data_points.borrow(), |dp| &dp[index]))
         } else {
-            Err(LtrError::RankListIndexOutOfBounds)
+            Err(LtrError::RankListIndexOutOfBounds(index))
         }
     }
 
@@ -76,7 +76,7 @@ impl RankList {
             self.data_points.borrow_mut()[index] = data_point;
             Ok(())
         } else {
-            Err(LtrError::RankListIndexOutOfBounds)
+            Err(LtrError::RankListIndexOutOfBounds(index))
         }
     }
 
@@ -121,6 +121,7 @@ impl RankList {
         }
         self.data_points.replace(new_data_points);
     }
+
 }
 
 

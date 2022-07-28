@@ -10,22 +10,24 @@ use std::fmt::Display;
 ///
 #[derive(Debug, Clone)]
 pub enum LtrError {
-    FeatureIndexOutOfBounds,
-    RankListIndexOutOfBounds,
+    FeatureIndexOutOfBounds(usize),
+    RankListIndexOutOfBounds(usize),
     InvalidDataPoint(&'static str),
     EvaluationError(&'static str),
     ParseError(&'static str),
+    IOError(String),
     NoRankers,
 }
 
 impl Display for LtrError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            LtrError::FeatureIndexOutOfBounds => write!(f, "Feature index out of bounds"),
-            LtrError::RankListIndexOutOfBounds => write!(f, "RankList index out of bounds"),
+            LtrError::FeatureIndexOutOfBounds(i) => write!(f, "Feature index out of bounds: {}", i),
+            LtrError::RankListIndexOutOfBounds(i) => write!(f, "RankList index out of bounds: {}", i),
             LtrError::InvalidDataPoint(msg) => write!(f, "Invalid datapoint: {}", msg),
             LtrError::EvaluationError(msg) => write!(f, "Evaluation error: {}", msg),
             LtrError::ParseError(msg) => write!(f, "Error while parsing an input: {}", msg),
+            LtrError::IOError(msg) => write!(f, "Error while reading or writing an input: {}", msg),
             LtrError::NoRankers => write!(f, "No rankers were built. Run `fit` first."),
         }
     }

@@ -6,6 +6,8 @@ use crate::error::LtrError;
 use crate::ranklist::RankList;
 use crate::DataSet;
 
+use super::LtrFormat;
+
 ///
 /// The default implementation of SVMLight parsing
 /// is based on the SVM-light format.
@@ -149,6 +151,25 @@ impl SVMLight {
         Ok(dataset)
     }
 }
+
+
+impl LtrFormat  for SVMLight {
+    fn load(path: &str) -> Result<DataSet, LtrError> {
+        
+        let buffer = match std::fs::read_to_string(path) {
+            Ok(buffer) => buffer,
+            Err(e) => return Err(LtrError::IOError(e.to_string())),
+        };
+        
+        SVMLight::load_dataset(&buffer)
+
+    }
+
+    fn save(path: &str, dataset: &DataSet) -> Result<(), LtrError> {
+        unimplemented!()
+    }
+}
+
 
 #[cfg(test)]
 mod tests {

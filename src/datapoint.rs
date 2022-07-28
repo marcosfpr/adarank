@@ -110,7 +110,7 @@ impl DataPoint {
     ///
     pub fn get_feature(&self, index: usize) -> Result<&Feature, LtrError> {
         if index == 0 || index > self.features.len() {
-            return Err(LtrError::FeatureIndexOutOfBounds);
+            return Err(LtrError::FeatureIndexOutOfBounds(index));
         }
         Ok(&self.features[index - 1])
     }
@@ -169,7 +169,7 @@ impl DataPoint {
     pub fn set_feature(&mut self, index: usize, feature: Feature) -> Result<(), LtrError> {
         // Sanity check
         if index > self.features.len() {
-            return Err(LtrError::FeatureIndexOutOfBounds);
+            return Err(LtrError::FeatureIndexOutOfBounds(index));
         }
         self.features[index] = feature;
         Ok(())
