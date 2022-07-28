@@ -131,7 +131,7 @@ impl SVMLight {
                 continue;
             }
             let dp = SVMLight::load_datapoint(line)?;
-            if dp.get_query_id() != current_query_id || current_query_id == 0 {
+            if dp.get_query_id() == current_query_id || current_query_id == 0 {
                 current_query_id = dp.get_query_id();
                 current_rank_list.push(dp);
             } else {

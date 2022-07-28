@@ -1,6 +1,10 @@
 use ltrs::{
-    ensemble::adarank::AdaRank, eval::{precision::Precision, map::MAP}, learner::Learner, loader::LtrFormat,
-    utils::logging::init_logger, DataSet,
+    ensemble::adarank::AdaRank,
+    eval::{map::MAP, precision::Precision},
+    learner::Learner,
+    loader::LtrFormat,
+    utils::logging::init_logger,
+    DataSet,
 };
 
 fn main() {
@@ -21,15 +25,7 @@ fn main() {
         )
     });
 
-    let mut adarank = AdaRank::new(
-        ohsumed_dataset,
-        Box::new(MAP),
-        50,
-        3,
-        0.003,
-        None,
-        None,
-    );
+    let mut adarank = AdaRank::new(ohsumed_dataset, Box::new(MAP), 50, 3, 0.003, None, None);
 
     adarank.fit().unwrap();
 

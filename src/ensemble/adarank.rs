@@ -132,10 +132,10 @@ impl AdaRank {
             vec![
                 format!("{}", current_it).as_str(),
                 format!("{}", feature).as_str(),
-                format!("{}", training_score).as_str(),
-                format!("{}", improvement).as_str(),
-                format!("{}", validation_score).as_str(),
-                format!("{}", validation_improvement).as_str(),
+                format!("{:.5}", training_score).as_str(),
+                format!("{:.5}", improvement).as_str(),
+                format!("{:.5}", validation_score).as_str(),
+                format!("{:.5}", validation_improvement).as_str(),
                 status,
             ],
             &self.table_config,
@@ -161,8 +161,8 @@ impl AdaRank {
             "{}",
             logging::log_shifted_table_row(
                 vec![
-                    format!("{}", self.score_training).as_str(),
-                    format!("{}", self.score_validation).as_str(),
+                    format!("{:.5}", self.score_training).as_str(),
+                    format!("{:.5}", self.score_validation).as_str(),
                 ],
                 &results_table,
             )
@@ -349,11 +349,12 @@ impl Learner for AdaRank {
         }
 
         self.rank_dataset(&self.training_dataset);
+        self.score_training = self.scorer.evaluate_dataset(&self.training_dataset)?;
 
         match &self.validation_dataset {
             Some(dataset) => {
                 self.rank_dataset(dataset);
-                self.score_training = self.scorer.evaluate_dataset(&mut self.training_dataset).unwrap_or_else(|e| {
+                self.score_validation = self.scorer.evaluate_dataset(&self.training_dataset).unwrap_or_else(|e| {
                     log::error!("Error evaluating training dataset: {}", e);
                     0.0
                 });
@@ -362,7 +363,6 @@ impl Learner for AdaRank {
                 self.score_validation = 0.0;
             }
         }
-
 
         log::debug!("{}", self.get_results());
         Ok(())
