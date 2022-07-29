@@ -4,7 +4,7 @@ use ltrs::{
     learner::Learner,
     loader::LtrFormat,
     utils::logging::init_logger,
-    DataSet,
+    DataSet, ranker::Ranker,
 };
 
 fn main() {
@@ -24,12 +24,20 @@ fn main() {
                 corpus.display()
             )
         });
-    
+        
+        // Cloning a sample to test later...
+        let test_sample = ohsumed_dataset[0].clone();
+
         let mut adarank = AdaRank::new(ohsumed_dataset, Box::new(MAP), 50, 3, 0.003, None, None);
     
         adarank.fit().unwrap();
-    
+        
         log::debug!("Finished fitting");
+        
+        let dp = test_sample.get(0).unwrap();
+
+        let doc_label = adarank.predict(&test_sample.get(0).unwrap());
+        log::info!("Document {} has the score {:.2} for query {}", dp.get_description().unwrap(), doc_label, dp.get_query_id());
     } else {
         log::error!("Corpus not found at {}", corpus.display());
         std::process::exit(1);

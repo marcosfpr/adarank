@@ -6,6 +6,7 @@ license = "MIT"
 edition = "2021"
 categories = ["learning-to-rank", "information-retrieval", "data-structures"]
 description = """Learning to rank library for Rust."""
+documentation = "https://docs.rs/ltrs"
 homepage = "https://github.com/marcosfpr/ltrs"
 repository = "https://github.com/marcosfpr/ltrs"
 readme = "README.md"
