@@ -25,7 +25,7 @@ Recently, regarding the massive amount of data available for training, it's beco
 <br/>
 
 [![Build Status](https://img.shields.io/github/workflow/status/marcosfpr/ltrs/Unit%20tests)](https://img.shields.io/github/workflow/status/marcosfpr/ltrs/Unit%20tests)
-[![Latest Release](https://img.shields.io/github/v/release/marcosfpr/ltrs)](https://img.shields.io/github/v/release/marcosfpr/ltrs)
+[![Version](https://img.shields.io/crates/v/ltrs)](https://crates.io/crates/ltrs)
 [![Docs](https://img.shields.io/badge/Documentation-down-red)]()
 [![Coverage](https://img.shields.io/codecov/c/github/marcosfpr/ltrs)](https://img.shields.io/codecov/c/github/marcosfpr/ltrs)
 [![Issues](https://img.shields.io/github/issues/marcosfpr/ltrs)](https://img.shields.io/github/issues/marcosfpr/ltrs)
