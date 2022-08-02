@@ -1,6 +1,5 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-
 use crate::eval::Evaluator;
 use crate::ranklist::RankList;
 

@@ -1,8 +1,8 @@
-use ltrs::utils::{
-    format::{Alignment, TableConfig, consts::DEFAULT_INNER_TABLE_LOGGER, TableLogger},
-    logging::{*, self},
-};
 use colored::{ColoredString, Colorize};
+use ltrs::utils::{
+    format::{consts::DEFAULT_INNER_TABLE_LOGGER, Alignment, TableConfig, TableLogger},
+    logging::{self, *},
+};
 
 use log::{debug, error, info, trace, warn};
 
@@ -24,17 +24,19 @@ fn main() {
         true,
     );
 
-    log::debug!("{}", logging::log_table_header(
-        vec![
-            "#Iter",
-            "Feature",
-            "MAP-T",
-            "Improve-T",
-            "MAP-V",
-            "Improve-V",
-            "Status",
-        ],
-        &config,
-    ));
+    log::debug!(
+        "{}",
+        logging::log_table_header(
+            vec![
+                "#Iter",
+                "Feature",
+                "MAP-T",
+                "Improve-T",
+                "MAP-V",
+                "Improve-V",
+                "Status",
+            ],
+            &config,
+        )
+    );
 }
-

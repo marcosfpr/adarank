@@ -1,4 +1,4 @@
-use std::cell::{RefCell, Ref};
+use std::cell::{Ref, RefCell};
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 use std::fmt;
@@ -13,15 +13,15 @@ use crate::error::LtrError;
 ///
 /// The RankList primitive represents a collections of `DataPoint`s
 /// corresponding to the same query id. This property is checked at runtime.
-/// 
+///
 /// RankLists are used by `Learner`s to rank `DataPoint`s and offer a way to
 /// evaluate the performance of the `Learner`.
-/// 
+///
 /// It's important to notice that RankList offers interior mutability,
 /// which means that it's possible to modify a RankList
 /// without mutable borrowing it. This is particularly useful when
 /// shuffling the `DataPoint`s inside the RankList.
-/// 
+///
 ///
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankList {
@@ -95,7 +95,9 @@ impl RankList {
     ///
     pub fn rank(&self) -> Result<(), LtrError> {
         // Reverse sorting
-        self.data_points.borrow_mut().sort_by(|a, b| b.partial_cmp(&a).unwrap());
+        self.data_points
+            .borrow_mut()
+            .sort_by(|a, b| b.partial_cmp(&a).unwrap());
         Ok(())
     }
 
@@ -121,7 +123,7 @@ impl RankList {
     /// # Arguments
     /// * `permutation` - The permutation vector.
     ///
-    pub fn permute(&self, permutation: Vec<usize>) -> Result<(), LtrError>{
+    pub fn permute(&self, permutation: Vec<usize>) -> Result<(), LtrError> {
         let mut new_data_points = Vec::with_capacity(self.data_points.borrow().len());
         for i in permutation {
             match self.data_points.borrow().get(i) {
@@ -132,15 +134,13 @@ impl RankList {
         self.data_points.replace(new_data_points);
         Ok(())
     }
-
 }
-
 
 ///
 /// A `RankList` iterator.
 /// It's possible to iterate over a `RankList` using the `Iterator` trait.
 /// Still a in-development feature.
-/// 
+///
 pub struct RankListIter<'a> {
     rank_list: &'a RankList,
     index: usize,
@@ -152,7 +152,9 @@ impl<'a> Iterator for RankListIter<'a> {
     fn next(&mut self) -> Option<Ref<'a, DataPoint>> {
         if self.index < self.rank_list.len() {
             self.index += 1;
-            Some(Ref::map(self.rank_list.data_points.borrow(), |dp| &dp[self.index - 1]))
+            Some(Ref::map(self.rank_list.data_points.borrow(), |dp| {
+                &dp[self.index - 1]
+            }))
         } else {
             None
         }
@@ -180,7 +182,9 @@ impl<'a> IntoIterator for &'a RankList {
 ///
 impl From<Vec<DataPoint>> for RankList {
     fn from(data_points: Vec<DataPoint>) -> RankList {
-        RankList { data_points: RefCell::new(data_points) }
+        RankList {
+            data_points: RefCell::new(data_points),
+        }
     }
 }
 
@@ -227,7 +231,7 @@ macro_rules! rl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{loader::svmlight::*, dp};
+    use crate::{dp, loader::svmlight::*};
 
     #[test]
     fn test_ranklist() {
@@ -339,12 +343,7 @@ mod tests {
 
         let new_dp = SVMLight::load_datapoint("2 qid:9 1:10 2:1.2 3:4.3 4:5.4 # doc23").unwrap();
 
-        set_rank_list
-            .set(
-                0,
-                new_dp.clone(),
-            )
-            .unwrap();
+        set_rank_list.set(0, new_dp.clone()).unwrap();
         assert_eq!(
             set_rank_list.get(0).unwrap().get_description().unwrap(),
             "doc23"
@@ -352,9 +351,8 @@ mod tests {
 
         match set_rank_list.set(100, new_dp) {
             Err(er) => assert_eq!(er, LtrError::RankListIndexOutOfBounds(100 as usize)),
-            _ => unreachable!()
+            _ => unreachable!(),
         };
-
     }
 
     #[test]
@@ -362,15 +360,24 @@ mod tests {
         let rank_list: RankList = RankList::from(vec![
             dp!(0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
             dp!(1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),
-            dp!(0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3")
+            dp!(0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3"),
         ]);
 
         assert_eq!(rank_list.len(), 3);
 
         for (i, data_point) in rank_list.into_iter().enumerate() {
-            assert_eq!(data_point.get_label(), rank_list.get(i).unwrap().get_label());
-            assert_eq!(data_point.get_query_id(), rank_list.get(i).unwrap().get_query_id());
-            assert_eq!(*data_point.get_feature(1).unwrap(), *rank_list.get(i).unwrap().get_feature(1).unwrap());
+            assert_eq!(
+                data_point.get_label(),
+                rank_list.get(i).unwrap().get_label()
+            );
+            assert_eq!(
+                data_point.get_query_id(),
+                rank_list.get(i).unwrap().get_query_id()
+            );
+            assert_eq!(
+                *data_point.get_feature(1).unwrap(),
+                *rank_list.get(i).unwrap().get_feature(1).unwrap()
+            );
         }
     }
 }

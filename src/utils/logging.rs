@@ -159,10 +159,12 @@ pub fn log_table_row<F: ToString>(row: Vec<F>, config: &TableConfig) -> String {
 ///
 pub fn log_shifted_table_row<F: ToString>(row: Vec<F>, config: &TableConfig) -> String {
     let mut writer = StringWriter::new();
-    
+
     shift_prefix(&mut writer);
 
-    writer.write_all(log_table_row(row, config).as_bytes()).unwrap();
+    writer
+        .write_all(log_table_row(row, config).as_bytes())
+        .unwrap();
 
     String::from_str(writer.as_string()).unwrap()
 }

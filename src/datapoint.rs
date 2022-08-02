@@ -14,11 +14,11 @@ use crate::{error::LtrError, Feature};
 /// from a LTR-valid data format. A common format is the SVM-Light
 /// format:
 /// `<label> qid:<query_id> <feature_1>:<value_1> <feature_2>:<value_2> ...<feature_n>:<value_n>`
-/// 
+///
 /// where `<label>` is the target value, `<query_id>` is the query ID,  <feature_i> is the feature
 /// and `<value_i>` is the value of the feature.
-/// 
-/// 
+///
+///
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataPoint {
     /// The label of the DataPoint.
@@ -331,7 +331,7 @@ mod tests {
     fn test_update_features() {
         let mut mydp = dp!(1, 2, vec![1.2, 3.4, 5.6], "This is a test");
 
-        // Assert that the features are correct 
+        // Assert that the features are correct
         assert_eq!(mydp.get_features(), &vec![1.2, 3.4, 5.6]);
 
         match mydp.get_feature(0) {
@@ -355,6 +355,5 @@ mod tests {
         mydp.set_label(2);
 
         assert!(mydp > snapshot);
-
     }
 }

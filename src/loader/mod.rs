@@ -1,7 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
-use crate::{DataSet, error::LtrError};
+use crate::{error::LtrError, DataSet};
 pub mod svmlight;
 
 pub trait LtrFormat {

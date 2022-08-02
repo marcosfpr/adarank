@@ -19,7 +19,7 @@ use crate::DataSet;
 /// implement the function `evaluate_ranklist`, which evaluates the results
 /// generated  from a single `RankList`.
 ///
-pub trait Evaluator: ToString{
+pub trait Evaluator: ToString {
     ///
     /// Evaluates a `DataSet`
     ///

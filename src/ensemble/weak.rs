@@ -10,11 +10,9 @@ pub struct WeakRanker {
 }
 
 impl WeakRanker {
-
     pub fn new(feature_id: usize) -> Self {
         WeakRanker { feature_id }
     }
-
 }
 
 impl Ranker for WeakRanker {
