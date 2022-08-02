@@ -9,13 +9,23 @@ use serde::{Deserialize, Serialize};
 use crate::datapoint::DataPoint;
 use crate::error::LtrError;
 
-/// A RankList is the object to be ranked by models.
+/// A RankList is the object to be ranked by `Learner`s.
 ///
-/// A RankList is a list of `DataPoint`s corresponding to the same query id.
-/// This property must be checked at runtime.
+/// The RankList primitive represents a collections of `DataPoint`s
+/// corresponding to the same query id. This property is checked at runtime.
+/// 
+/// RankLists are used by `Learner`s to rank `DataPoint`s and offer a way to
+/// evaluate the performance of the `Learner`.
+/// 
+/// It's important to notice that RankList offers interior mutability,
+/// which means that it's possible to modify a RankList
+/// without mutable borrowing it. This is particularly useful when
+/// shuffling the `DataPoint`s inside the RankList.
+/// 
 ///
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankList {
+    ///
     /// The list of `DataPoint`s.
     ///
     data_points: RefCell<Vec<DataPoint>>,
@@ -111,20 +121,26 @@ impl RankList {
     /// # Arguments
     /// * `permutation` - The permutation vector.
     ///
-    pub fn permute(&self, permutation: Vec<usize>) {
+    pub fn permute(&self, permutation: Vec<usize>) -> Result<(), LtrError>{
         let mut new_data_points = Vec::with_capacity(self.data_points.borrow().len());
         for i in permutation {
             match self.data_points.borrow().get(i) {
                 Some(dp) => new_data_points.push(dp.clone()),
-                None => (),
+                None => return Err(LtrError::RankListIndexOutOfBounds(i)),
             }
         }
         self.data_points.replace(new_data_points);
+        Ok(())
     }
 
 }
 
 
+///
+/// A `RankList` iterator.
+/// It's possible to iterate over a `RankList` using the `Iterator` trait.
+/// Still a in-development feature.
+/// 
 pub struct RankListIter<'a> {
     rank_list: &'a RankList,
     index: usize,
@@ -211,7 +227,7 @@ macro_rules! rl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::loader::svmlight::*;
+    use crate::{loader::svmlight::*, dp};
 
     #[test]
     fn test_ranklist() {
@@ -288,7 +304,11 @@ mod tests {
         // Permutation
         let permuted_rank_list = rank_list.clone();
         let permutation = vec![1, 2, 0];
-        permuted_rank_list.permute(permutation);
+
+        let invalid_permutation = vec![1, 2, 3];
+        assert!(permuted_rank_list.permute(invalid_permutation).is_err());
+
+        permuted_rank_list.permute(permutation).unwrap();
         assert_eq!(
             permuted_rank_list
                 .get(0)
@@ -316,25 +336,34 @@ mod tests {
 
         //  Set
         let set_rank_list = rank_list.clone();
+
+        let new_dp = SVMLight::load_datapoint("2 qid:9 1:10 2:1.2 3:4.3 4:5.4 # doc23").unwrap();
+
         set_rank_list
             .set(
                 0,
-                SVMLight::load_datapoint("2 qid:9 1:10 2:1.2 3:4.3 4:5.4 # doc23").unwrap(),
+                new_dp.clone(),
             )
             .unwrap();
         assert_eq!(
             set_rank_list.get(0).unwrap().get_description().unwrap(),
             "doc23"
         );
+
+        match set_rank_list.set(100, new_dp) {
+            Err(er) => assert_eq!(er, LtrError::RankListIndexOutOfBounds(100 as usize)),
+            _ => unreachable!()
+        };
+
     }
 
     #[test]
     fn test_ranklist_iterator() {
-        let rank_list = rl!(
-            (0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
-            (1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),
-            (0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3")
-        );
+        let rank_list: RankList = RankList::from(vec![
+            dp!(0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
+            dp!(1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),
+            dp!(0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3")
+        ]);
 
         assert_eq!(rank_list.len(), 3);
 
