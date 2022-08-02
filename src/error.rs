@@ -8,14 +8,43 @@ use std::fmt::Display;
 /// These errors can  be called for all modules in the LTR library,
 /// and provide a way to identify, semantically well-defined, the source of the error.
 ///
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum LtrError {
+    ///
+    /// Error raised when a feature is not found in a `DataPoint`.
+    /// It's important to notice that the first index of the datapoint's features is 1, not 0.
+    /// 
     FeatureIndexOutOfBounds(usize),
+
+    ///
+    /// Error raised when a `DataPoint` is not found in a `RankList`.
+    /// 
     RankListIndexOutOfBounds(usize),
+    
+    ///
+    /// Error raised when a `DataPoint` is invalid.
+    /// 
     InvalidDataPoint(&'static str),
+    
+    ///
+    /// Error raised when an evaluating a `RankList` or a `DataSet` fails.
+    /// 
     EvaluationError(&'static str),
+    
+    ///
+    /// Error raised when the parsing from a stream to a `DataPoint` fails.
+    /// 
     ParseError(&'static str),
+    
+    ///
+    /// General IO error.
+    ///
     IOError(String),
+
+
+    ///
+    /// Error raised when no `Ranker` was found in a `Learner`.
+    /// 
     NoRankers,
 }
 

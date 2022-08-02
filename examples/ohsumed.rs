@@ -1,8 +1,8 @@
 use ltrs::{
     ensemble::adarank::AdaRank,
-    eval::{map::MAP, precision::Precision},
+    eval::map::MAP,
     learner::Learner,
-    loader::LtrFormat,
+    loader::{LtrFormat, svmlight::SVMLight},
     utils::logging::init_logger,
     DataSet, ranker::Ranker,
 };
@@ -15,7 +15,7 @@ fn main() {
 
     if corpus.exists() {
         log::info!("Loading corpus from {}", corpus.display());
-        let ohsumed_dataset: DataSet = ltrs::loader::svmlight::SVMLight::load(
+        let ohsumed_dataset: DataSet = SVMLight::load(
             corpus.to_str().unwrap()
         )
         .unwrap_or_else(|_| {

@@ -13,13 +13,12 @@ use crate::{error::LtrError, Feature};
 /// A DataPoint represents a pair `[item, query]` extracted
 /// from a LTR-valid data format. A common format is the SVM-Light
 /// format:
-/// `<label> qid:<query_id> <feature>:<value> <feature>:<value> ...`
-///
-/// TODO:
-/// 1. Add format support to printing and parsing DataPoints
-/// 2. Add support for sparse vectors
-/// 3. Add support for different data formats
-/// 4. Optimize efficiency when resizing the vector.
+/// `<label> qid:<query_id> <feature_1>:<value_1> <feature_2>:<value_2> ...<feature_n>:<value_n>`
+/// 
+/// where `<label>` is the target value, `<query_id>` is the query ID,  <feature_i> is the feature
+/// and `<value_i>` is the value of the feature.
+/// 
+/// 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataPoint {
     /// The label of the DataPoint.
@@ -171,7 +170,7 @@ impl DataPoint {
         if index > self.features.len() {
             return Err(LtrError::FeatureIndexOutOfBounds(index));
         }
-        self.features[index] = feature;
+        self.features[index - 1] = feature;
         Ok(())
     }
 
@@ -278,6 +277,7 @@ macro_rules! dp {
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
 
     #[test]
@@ -325,5 +325,36 @@ mod tests {
             data_point.get_description(),
             Some(&"This is another test".to_string())
         );
+    }
+
+    #[test]
+    fn test_update_features() {
+        let mut mydp = dp!(1, 2, vec![1.2, 3.4, 5.6], "This is a test");
+
+        // Assert that the features are correct 
+        assert_eq!(mydp.get_features(), &vec![1.2, 3.4, 5.6]);
+
+        match mydp.get_feature(0) {
+            Ok(_) => assert!(false),
+            Err(er) => assert_eq!(er, LtrError::FeatureIndexOutOfBounds(0 as usize)),
+        }
+
+        mydp.add_feature(20.0).unwrap();
+
+        assert_eq!(mydp.get_feature(4), Ok(&20.0));
+
+        let snapshot = mydp.clone();
+
+        mydp.set_feature(4, 21.0).unwrap();
+
+        assert_eq!(mydp.get_feature(4), Ok(&21.0));
+
+        assert_ne!(mydp.get_features(), snapshot.get_features());
+        assert_eq!(mydp, snapshot); // equal because the label is the same.
+
+        mydp.set_label(2);
+
+        assert!(mydp > snapshot);
+
     }
 }
