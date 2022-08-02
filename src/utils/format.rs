@@ -10,6 +10,7 @@ use std::{
 
 use encode_unicode::Utf8Char;
 
+/// New line agnostic character.
 #[cfg(any(not(windows), not(feature = "win_crlf")))]
 pub static NEWLINE: &[u8] = b"\n";
 #[cfg(all(windows, feature = "win_crlf"))]
@@ -186,6 +187,9 @@ impl TableLogger {
         Ok(1)
     }
 
+    ///
+    /// Log a line separator to `out`.
+    /// 
     pub fn log_separator_with_config<T: Write + ?Sized>(
         &self,
         out: &mut T,
@@ -239,6 +243,9 @@ impl TableLogger {
         Ok(1)
     }
 
+    ///
+    /// Log a value to `out` based on a `TableConfig` specification.
+    /// 
     pub fn log_value_with_config<T: Write + ?Sized, F: ToString>(
         &self,
         out: &mut T,
@@ -304,6 +311,9 @@ impl Write for StringWriter {
     }
 }
 
+///
+/// Run-time lazily evaluated `TableLogger` constants.
+/// 
 pub mod consts {
 
     lazy_static! {
