@@ -2,12 +2,12 @@
 // This code is licensed under MIT license (see LICENSE for details)
 
 ///
-/// Mean Average Precision metric.
+/// Metric MAP (Mean Average Precision).
 /// 
 pub mod map;
 
 ///
-/// Precision at k (P@k) metric.
+/// Metric P@k (Precision at k).
 /// 
 pub mod precision;
 

@@ -17,9 +17,8 @@ use super::LtrFormat;
 pub struct SVMLight;
 
 impl SVMLight {
-
     ///
-    /// Load a single `DataPoint` from a string buffer.
+    /// Load a single `DataPoint` from a line of the SVMLight format.
     /// 
     pub fn load_datapoint(buffer: &str) -> Result<DataPoint, LtrError> {
         // Convert the buffer into a string
@@ -165,7 +164,7 @@ impl LtrFormat for SVMLight {
 
         SVMLight::load_dataset(&buffer)
     }
-    
+
     fn save(_path: &str, _dataset: &DataSet) -> Result<(), LtrError> {
         unimplemented!()
     }

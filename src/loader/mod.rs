@@ -3,24 +3,24 @@
 ///
 use crate::{error::LtrError, DataSet};
 
-
 ///
-/// Defines a loader for the SVM-Light input format.
+/// SVM-light format loader.
 /// 
 pub mod svmlight;
 
 ///
-/// The trait `LtrFormat` defines operations required for
-/// implementing a valid LTR input source.
+/// Defines the interface for loading and saving a dataset given a file path
+/// It's useful because models can load datasets directly from a file path.
 /// 
 pub trait LtrFormat {
-    ///
-    /// Load a `DataSet` from a file given its path.
-    /// 
-    fn load(path: &str) -> Result<DataSet, LtrError>;
     
     ///
-    /// Save a `DataSet` into a file given its path.
+    /// Loads a dataset from a file path.
+    /// 
+    fn load(path: &str) -> Result<DataSet, LtrError>;
+
+    ///
+    /// Saves a dataset to a file path.
     /// 
     fn save(path: &str, dataset: &DataSet) -> Result<(), LtrError>;
 }

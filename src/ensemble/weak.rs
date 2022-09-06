@@ -3,19 +3,24 @@
 ///
 use crate::ranker::Ranker;
 
+use crate::ranker::Ranker;
+
 ///
-/// Defines a stumb of an ensemble tree as a weak Ranker.
-/// It just retrieves the score of a DataPoint as the value of an isolated feature.
+/// A WeakRanker can be interpreted as a stump in an ensemble of rankers.
+/// Usually, the weak ranker is dummy, and it only evaluates the `RankList`
+/// considering a single feature inside the `DataPoint`s.
 /// 
 #[derive(Debug, Clone)]
 pub struct WeakRanker {
-    /// Feature id to be used as the final score for each DataPoint.
+    ///
+    /// The feature index of the feature to be used in the ranking.
+    /// 
     pub feature_id: usize,
 }
 
 impl WeakRanker {
     ///
-    /// Creates a new WeakRanker given a feature id.
+    /// Creates a new WeakRanker.
     /// 
     pub fn new(feature_id: usize) -> Self {
         WeakRanker { feature_id }

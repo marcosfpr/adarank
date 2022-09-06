@@ -4,6 +4,7 @@
 use std::collections::HashSet;
 
 use super::weak::WeakRanker;
+
 use crate::{
     eval::Evaluator,
     learner::{
@@ -18,32 +19,93 @@ use crate::{
 };
 
 ///
-/// AdaRank listwise algorithm.
+/// The basic idea of AdaRank is constructing “weak rankers” repeatedly based on reweighted
+/// training queries and linearly combining the weak rankers for making ranking predictions.
+/// In learning, AdaRank minimizes a loss function directly defined on performance measures.
+/// The details of AdaRank can be found in the paper “AdaRank: A Boosting Algorithm for Information Retrieval
 /// 
 pub struct AdaRank {
+    ///
+    /// Training dataset.
+    /// 
     training_dataset: DataSet,
+    ///
+    /// Optional dataset to be used for validation.
+    /// 
     validation_dataset: Option<DataSet>,
+    ///
+    /// Pointer to a evaluator.
+    /// 
     scorer: Box<dyn Evaluator>,
-    /// Maximum number of iterations.
+    ///
+    /// The number of iterations to be performed.
+    /// 
     pub iter: u64,
+    ///
+    /// Maximum number of consecutive feature selection
+    /// 
     max_consecutive_selections: usize,
+    ///
+    /// Current number of consecutive feature selection
+    /// 
     consecutive_selections: usize,
+    ///
+    /// Previous selected feature.
+    /// 
     previous_feature: usize,
-    /// Maximum tolerance between iterations.
+    ///
+    /// Tolerance criteria to stop the algorithm.
+    /// 
     pub tolerance: f32,
     /// The model scoring during the training phase.
+    ///
+    /// Training score of the model.
+    /// 
     pub score_training: f32,
-    /// The model score during the training phase for the validation DataSet.
+    ///
+    /// Validation score of the model.
+    /// 
     pub score_validation: f32,
+    ///
+    /// Subset of features to be used in the model.
+    /// 
     features: Vec<usize>,
+    ///
+    /// Previous training score.
+    /// 
     previous_traning_score: f32,
+    ///
+    /// Previous validation score.
+    /// 
     previous_validation_score: f32,
+    ///
+    /// Sample's weights. It indicates the importance of each sample 
+    /// in each iteration of the training process.
+    /// 
     sample_weights: Vec<f32>,
+    ///
+    /// The amount of say for each stump of the ensemble.
+    /// 
     ranker_weights: Vec<f32>,
+    ///
+    /// Best model's weights. It indicates the importance of each stump during the training process.
+    /// 
     best_weights: Vec<f32>,
+    ///
+    /// Best `WeakRanker`s of the ensemble.
+    /// 
     rankers: Vec<WeakRanker>,
+    ///
+    /// Best `WeakRanker`s found during the training process.
+    /// 
     best_rankers: Vec<WeakRanker>,
+    ///
+    /// Features already saturated.
+    /// 
     used_features: HashSet<usize>,
+    ///
+    /// Log configuration.
+    /// 
     table_config: TableConfig,
 }
 
@@ -150,7 +212,7 @@ impl AdaRank {
     }
 
     ///
-    /// Retrieves a summary of the test results
+    /// Get the training results summary.
     /// 
     pub fn get_results(&self) -> String {
         let results_table =
@@ -413,17 +475,17 @@ impl Ranker for AdaRank {
 }
 
 impl FileSerializable for AdaRank {
-    fn save_to_file(&self, path: &str) -> Result<(), crate::error::LtrError> {
+    fn save_to_file(&self, _path: &str) -> Result<(), crate::error::LtrError> {
         todo!()
     }
 
-    fn load_from_file(&mut self, path: &str) -> Result<(), crate::error::LtrError> {
+    fn load_from_file(&mut self, _path: &str) -> Result<(), crate::error::LtrError> {
         todo!()
     }
 }
 
 impl FeaturesConfigurable for AdaRank {
-    fn set_features(&mut self, features: Vec<usize>) {
+    fn set_features(&mut self, _features: Vec<usize>) {
         todo!()
     }
 
@@ -433,17 +495,17 @@ impl FeaturesConfigurable for AdaRank {
 }
 
 impl MetricConfigurable for AdaRank {
-    fn set_metric(&mut self, metric: &dyn crate::eval::Evaluator) {
+    fn set_metric(&mut self, _metric: &dyn crate::eval::Evaluator) {
         todo!()
     }
 }
 
 impl DatasetConfigurable for AdaRank {
-    fn set_train_dataset(&mut self, dataset: DataSet) {
+    fn set_train_dataset(&mut self, _dataset: DataSet) {
         todo!()
     }
 
-    fn set_validation_dataset(&mut self, dataset: DataSet) {
+    fn set_validation_dataset(&mut self, _dataset: DataSet) {
         todo!()
     }
 }
