@@ -1,15 +1,22 @@
-use crate::ranker::Ranker;
-
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
+use crate::ranker::Ranker;
 
+///
+/// Defines a stumb of an ensemble tree as a weak Ranker.
+/// It just retrieves the score of a DataPoint as the value of an isolated feature.
+/// 
 #[derive(Debug, Clone)]
 pub struct WeakRanker {
+    /// Feature id to be used as the final score for each DataPoint.
     pub feature_id: usize,
 }
 
 impl WeakRanker {
+    ///
+    /// Creates a new WeakRanker given a feature id.
+    /// 
     pub fn new(feature_id: usize) -> Self {
         WeakRanker { feature_id }
     }

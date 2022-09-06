@@ -1,6 +1,14 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
+
+///
+/// Mean Average Precision metric.
+/// 
 pub mod map;
+
+///
+/// Precision at k (P@k) metric.
+/// 
 pub mod precision;
 
 use crate::error::LtrError;

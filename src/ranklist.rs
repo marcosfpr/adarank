@@ -1,6 +1,7 @@
-use std::cell::{Ref, RefCell};
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
+
+use std::cell::{Ref, RefCell};
 use std::fmt;
 use std::fmt::Formatter;
 

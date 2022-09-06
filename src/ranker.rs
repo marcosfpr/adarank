@@ -36,7 +36,7 @@ pub trait Ranker {
         score_per_index.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 
         // Reorder the ranklist based on the index of the sorted score
-        ranklist.permute(score_per_index.iter().map(|&(i, _)| i).collect());
+        ranklist.permute(score_per_index.iter().map(|&(i, _)| i).collect()).unwrap();
     }
 
     ///

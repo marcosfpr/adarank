@@ -17,16 +17,23 @@ use crate::{
     DataSet,
 };
 
+///
+/// AdaRank listwise algorithm.
+/// 
 pub struct AdaRank {
     training_dataset: DataSet,
     validation_dataset: Option<DataSet>,
     scorer: Box<dyn Evaluator>,
+    /// Maximum number of iterations.
     pub iter: u64,
     max_consecutive_selections: usize,
     consecutive_selections: usize,
     previous_feature: usize,
+    /// Maximum tolerance between iterations.
     pub tolerance: f32,
+    /// The model scoring during the training phase.
     pub score_training: f32,
+    /// The model score during the training phase for the validation DataSet.
     pub score_validation: f32,
     features: Vec<usize>,
     previous_traning_score: f32,
@@ -142,6 +149,9 @@ impl AdaRank {
         )
     }
 
+    ///
+    /// Retrieves a summary of the test results
+    /// 
     pub fn get_results(&self) -> String {
         let results_table =
             TableConfig::new(vec![9, 9], (2, 2), Alignment::Center, true, true, true);

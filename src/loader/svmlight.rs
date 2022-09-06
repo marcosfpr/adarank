@@ -17,6 +17,10 @@ use super::LtrFormat;
 pub struct SVMLight;
 
 impl SVMLight {
+
+    ///
+    /// Load a single `DataPoint` from a string buffer.
+    /// 
     pub fn load_datapoint(buffer: &str) -> Result<DataPoint, LtrError> {
         // Convert the buffer into a string
         let mut data_point = DataPoint::empty();
@@ -161,8 +165,8 @@ impl LtrFormat for SVMLight {
 
         SVMLight::load_dataset(&buffer)
     }
-
-    fn save(path: &str, dataset: &DataSet) -> Result<(), LtrError> {
+    
+    fn save(_path: &str, _dataset: &DataSet) -> Result<(), LtrError> {
         unimplemented!()
     }
 }

@@ -1,6 +1,5 @@
-use colored::{ColoredString, Colorize};
 use ltrs::utils::{
-    format::{consts::DEFAULT_INNER_TABLE_LOGGER, Alignment, TableConfig, TableLogger},
+    format::{Alignment, TableConfig},
     logging::{self, *},
 };
 

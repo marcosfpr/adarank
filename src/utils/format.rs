@@ -10,6 +10,9 @@ use std::{
 
 use encode_unicode::Utf8Char;
 
+///
+/// Newline static marker
+/// 
 #[cfg(any(not(windows), not(feature = "win_crlf")))]
 pub static NEWLINE: &[u8] = b"\n";
 #[cfg(all(windows, feature = "win_crlf"))]
@@ -186,6 +189,9 @@ impl TableLogger {
         Ok(1)
     }
 
+    ///
+    /// Prints a log separator based on a `TableConfig` instance.
+    /// 
     pub fn log_separator_with_config<T: Write + ?Sized>(
         &self,
         out: &mut T,
@@ -239,6 +245,9 @@ impl TableLogger {
         Ok(1)
     }
 
+    ///
+    /// Log a table row based on a `TableConfig` instance.
+    /// 
     pub fn log_value_with_config<T: Write + ?Sized, F: ToString>(
         &self,
         out: &mut T,
@@ -304,6 +313,9 @@ impl Write for StringWriter {
     }
 }
 
+///
+/// Lazily evaluated constants.
+/// 
 pub mod consts {
 
     lazy_static! {
