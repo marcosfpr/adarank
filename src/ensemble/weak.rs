@@ -3,8 +3,6 @@
 ///
 use crate::ranker::Ranker;
 
-use crate::ranker::Ranker;
-
 ///
 /// A WeakRanker can be interpreted as a stump in an ensemble of rankers.
 /// Usually, the weak ranker is dummy, and it only evaluates the `RankList`
