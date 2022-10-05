@@ -4,12 +4,12 @@ use ltrs::{
     learner::Learner,
     loader::{svmlight::SVMLight, LtrFormat},
     ranker::Ranker,
-    utils::logging::init_logger,
+    utils::logging::init_logging,
     DataSet,
 };
 
 fn main() {
-    init_logger();
+    init_logging();
 
     // Get ohsumed location from the root project path /examples/ohsumed
     let corpus = std::path::Path::new("benchmarks/OHSUMED").join("Data/All/OHSUMED.txt");

@@ -66,9 +66,6 @@
 //! the example code (
 //! [source code](https://github.com/marcosfpr/ltrs/blob/master/examples/ohsumed.rs))
 
-#[macro_use]
-extern crate lazy_static;
-
 ///
 /// Define a core primitive for the library: `DataPoint`.  
 /// A `DataPoint` is a element of a `RankList` in a `DataSet`.

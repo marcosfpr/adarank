@@ -1,12 +1,9 @@
-use ltrs::utils::{
-    format::{Alignment, TableConfig},
-    logging::{self, *},
-};
+use ltrs::utils::logging::{init_logging, Alignment, TableConfig, TableLogger};
 
 use log::{debug, error, info, trace, warn};
 
 fn main() {
-    init_logger();
+    init_logging();
 
     debug!("{}", "Debug message");
     info!("{}", "Info message");
@@ -14,18 +11,12 @@ fn main() {
     error!("{}", "Error message");
     trace!("{}", "Trace message");
 
-    let config = TableConfig::new(
-        vec![7, 8, 9, 9, 9, 9, 9],
-        (2, 2),
-        Alignment::Center,
-        true,
-        true,
-        true,
-    );
+    let config = TableConfig::new(vec![7, 8, 9, 9, 9, 9, 9], (2, 2), Alignment::Center);
 
+    let logger = TableLogger::new(config);
     log::debug!(
         "{}",
-        logging::log_table_header(
+        logger.log(
             vec![
                 "#Iter",
                 "Feature",
@@ -35,7 +26,7 @@ fn main() {
                 "Improve-V",
                 "Status",
             ],
-            &config,
+            None
         )
     );
 }

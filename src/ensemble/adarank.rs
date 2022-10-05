@@ -3,6 +3,8 @@
 ///
 use std::collections::HashSet;
 
+use colored::Color;
+
 use super::weak::WeakRanker;
 
 use crate::{
@@ -11,10 +13,7 @@ use crate::{
         DatasetConfigurable, FeaturesConfigurable, FileSerializable, Learner, MetricConfigurable,
     },
     ranker::Ranker,
-    utils::{
-        format::{Alignment, TableConfig},
-        logging,
-    },
+    utils::logging::{Alignment, TableConfig, TableLogger},
     DataSet,
 };
 
@@ -23,90 +22,90 @@ use crate::{
 /// training queries and linearly combining the weak rankers for making ranking predictions.
 /// In learning, AdaRank minimizes a loss function directly defined on performance measures.
 /// The details of AdaRank can be found in the paper “AdaRank: A Boosting Algorithm for Information Retrieval
-/// 
+///
 pub struct AdaRank {
     ///
     /// Training dataset.
-    /// 
+    ///
     training_dataset: DataSet,
     ///
     /// Optional dataset to be used for validation.
-    /// 
+    ///
     validation_dataset: Option<DataSet>,
     ///
     /// Pointer to a evaluator.
-    /// 
+    ///
     scorer: Box<dyn Evaluator>,
     ///
     /// The number of iterations to be performed.
-    /// 
+    ///
     pub iter: u64,
     ///
     /// Maximum number of consecutive feature selection
-    /// 
+    ///
     max_consecutive_selections: usize,
     ///
     /// Current number of consecutive feature selection
-    /// 
+    ///
     consecutive_selections: usize,
     ///
     /// Previous selected feature.
-    /// 
+    ///
     previous_feature: usize,
     ///
     /// Tolerance criteria to stop the algorithm.
-    /// 
+    ///
     pub tolerance: f32,
     /// The model scoring during the training phase.
     ///
     /// Training score of the model.
-    /// 
+    ///
     pub score_training: f32,
     ///
     /// Validation score of the model.
-    /// 
+    ///
     pub score_validation: f32,
     ///
     /// Subset of features to be used in the model.
-    /// 
+    ///
     features: Vec<usize>,
     ///
     /// Previous training score.
-    /// 
+    ///
     previous_traning_score: f32,
     ///
     /// Previous validation score.
-    /// 
+    ///
     previous_validation_score: f32,
     ///
-    /// Sample's weights. It indicates the importance of each sample 
+    /// Sample's weights. It indicates the importance of each sample
     /// in each iteration of the training process.
-    /// 
+    ///
     sample_weights: Vec<f32>,
     ///
     /// The amount of say for each stump of the ensemble.
-    /// 
+    ///
     ranker_weights: Vec<f32>,
     ///
     /// Best model's weights. It indicates the importance of each stump during the training process.
-    /// 
+    ///
     best_weights: Vec<f32>,
     ///
     /// Best `WeakRanker`s of the ensemble.
-    /// 
+    ///
     rankers: Vec<WeakRanker>,
     ///
     /// Best `WeakRanker`s found during the training process.
-    /// 
+    ///
     best_rankers: Vec<WeakRanker>,
     ///
     /// Features already saturated.
-    /// 
+    ///
     used_features: HashSet<usize>,
     ///
-    /// Log configuration.
-    /// 
-    table_config: TableConfig,
+    /// Logger.
+    ///
+    logger: TableLogger,
 }
 
 impl AdaRank {
@@ -157,23 +156,16 @@ impl AdaRank {
             rankers,
             best_rankers,
             used_features,
-            table_config: tcfg,
+            logger: TableLogger::new(tcfg),
         }
     }
 
     fn table_config() -> TableConfig {
-        TableConfig::new(
-            vec![7, 8, 9, 9, 9, 9, 9],
-            (2, 2),
-            Alignment::Center,
-            true,
-            true,
-            true,
-        )
+        TableConfig::new(vec![7, 8, 9, 9, 9, 9, 9], (2, 2), Alignment::Center)
     }
 
     fn debug_header(&self) -> String {
-        logging::log_table_header(
+        self.logger.log(
             vec![
                 "#Iter",
                 "Feature",
@@ -183,7 +175,7 @@ impl AdaRank {
                 "Improve-V",
                 "Status",
             ],
-            &self.table_config,
+            Some(Color::Cyan),
         )
     }
 
@@ -197,7 +189,7 @@ impl AdaRank {
         validation_improvement: f32,
         status: &str,
     ) -> String {
-        logging::log_table_row(
+        self.logger.log(
             vec![
                 format!("{}", current_it).as_str(),
                 format!("{}", feature).as_str(),
@@ -207,39 +199,37 @@ impl AdaRank {
                 format!("{:.5}", validation_improvement).as_str(),
                 status,
             ],
-            &self.table_config,
+            None,
         )
     }
 
     ///
     /// Get the training results summary.
-    /// 
-    pub fn get_results(&self) -> String {
-        let results_table =
-            TableConfig::new(vec![9, 9], (2, 2), Alignment::Center, true, true, true);
+    ///
+    pub fn log_results(&self) {
+        let results_config = TableConfig::new(vec![9, 9], (2, 2), Alignment::Center);
+        let table_logger = TableLogger::new(results_config);
 
-        let mut results = String::new();
-        results.push_str(&format!(
-            "{}\n",
-            logging::log_table_header(
+        log::info!(
+            "{}",
+            table_logger.log(
                 vec![
                     format!("{}-T", self.scorer.to_string()).as_str(),
                     format!("{}-V", self.scorer.to_string()).as_str(),
                 ],
-                &results_table,
+                Some(Color::Cyan),
             )
-        ));
-        results.push_str(&format!(
+        );
+        log::info!(
             "{}",
-            logging::log_shifted_table_row(
+            table_logger.log(
                 vec![
                     format!("{:.5}", self.score_training).as_str(),
                     format!("{:.5}", self.score_validation).as_str(),
                 ],
-                &results_table,
+                None,
             )
-        ));
-        results
+        );
     }
 
     fn initialize_weights(len: usize) -> Vec<f32> {
@@ -438,7 +428,7 @@ impl Learner for AdaRank {
             }
         }
 
-        log::debug!("{}", self.get_results());
+        self.log_results();
         Ok(())
     }
 

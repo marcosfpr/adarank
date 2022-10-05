@@ -4,8 +4,5 @@
 /// Logging capabilities for lt.rs
 pub mod logging;
 
-/// Formatting capabilities for lt.rs
-pub mod format;
-
 /// Randomization capabilities for lt.rs
 pub mod randomize;
