@@ -4,7 +4,7 @@
   <h3 align="center">lt.rs</h3>
 
   <p align="center">
-    Learning to Rank for Rustaceans
+    Learning to Rank for Rustaceans [Early stages of development]
     <br />
     <a href=""><strong>Explore the docs »</strong></a>
     <br />
