@@ -1,6 +1,9 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-use crate::{datapoint::DataPoint, ranklist::RankList, DataSet};
+use crate::{
+    memory_system::elements::{datapoint::DataPoint, ranklist::RankList},
+    DataSet,
+};
 
 /// Idea
 /// Trait Ranker: predict + rank
@@ -36,7 +39,9 @@ pub trait Ranker {
         score_per_index.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
 
         // Reorder the ranklist based on the index of the sorted score
-        ranklist.permute(score_per_index.iter().map(|&(i, _)| i).collect()).unwrap();
+        ranklist
+            .permute(score_per_index.iter().map(|&(i, _)| i).collect())
+            .unwrap();
     }
 
     ///

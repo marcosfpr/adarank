@@ -448,11 +448,11 @@ impl Learner for AdaRank {
 }
 
 impl Ranker for AdaRank {
-    fn predict(&self, datapoint: &crate::datapoint::DataPoint) -> f32 {
+    fn predict(&self, datapoint: &crate::memory_system::elements::datapoint::DataPoint) -> f32 {
         let mut score = 0.0;
         for (ranker, weight) in self.rankers.iter().zip(self.ranker_weights.iter()) {
             let feature_value: f32 = match datapoint.get_feature(ranker.feature_id) {
-                Ok(value) => *value,
+                Ok(value) => **value,
                 Err(e) => {
                     log::error!("Error getting feature value: {}", e);
                     0.0

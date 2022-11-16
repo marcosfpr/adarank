@@ -1,9 +1,10 @@
-/// Copyright (c) 2021 Marcos Pontes
-/// MIT License
-///
-use crate::datapoint::DataPoint;
+// Copyright (c) 2021 Marcos Pontes
+// MIT License
+//
 use crate::error::LtrError;
-use crate::ranklist::RankList;
+use crate::memory_system::elements::datapoint::DataPoint;
+use crate::memory_system::elements::feature::Feature;
+use crate::memory_system::elements::ranklist::RankList;
 use crate::DataSet;
 
 use super::LtrFormat;
@@ -19,7 +20,7 @@ pub struct SVMLight;
 impl SVMLight {
     ///
     /// Load a single `DataPoint` from a line of the SVMLight format.
-    /// 
+    ///
     pub fn load_datapoint(buffer: &str) -> Result<DataPoint, LtrError> {
         // Convert the buffer into a string
         let mut data_point = DataPoint::empty();
@@ -58,13 +59,13 @@ impl SVMLight {
             "Error in SVMLight::load_datapoint: Query ID processing failure",
         ))?;
         let qid = qid_str
-            .parse::<u32>()
+            .parse::<u64>()
             .map_err(|_| LtrError::InvalidDataPoint("Invalid qid parameter."))?;
 
         data_point.set_query_id(qid);
 
         // Get the features
-        let mut feature_values = Vec::new();
+        let mut feature_values: Vec<Feature> = Vec::new();
         for feature in iter {
             let mut feature_iter = feature.split(':');
 
@@ -77,11 +78,11 @@ impl SVMLight {
             let value = feature_iter
                 .next()
                 .ok_or(LtrError::InvalidDataPoint("Missing feature value."))?
-                .parse::<f32>()
+                .parse::<Feature>()
                 .map_err(|_| LtrError::InvalidDataPoint("Invalid feature value."))?;
 
             if index > feature_values.len() {
-                feature_values.resize(index as usize, 0.0);
+                feature_values.resize(index as usize, Feature::from(0.0));
             }
 
             feature_values[index - 1] = value;
@@ -183,9 +184,9 @@ mod tests {
         assert_eq!(data_point.get_query_id(), 10);
         assert_eq!(data_point.get_description(), Some(&"desc".to_string()));
         assert_eq!(data_point.get_features().len(), 3);
-        assert_eq!(*data_point.get_feature(1).unwrap(), 21.0f32);
-        assert_eq!(*data_point.get_feature(2).unwrap(), 2.3f32);
-        assert_eq!(*data_point.get_feature(3).unwrap(), 4.5f32);
+        assert_eq!(**data_point.get_feature(1).unwrap(), 21.0f32);
+        assert_eq!(**data_point.get_feature(2).unwrap(), 2.3f32);
+        assert_eq!(**data_point.get_feature(3).unwrap(), 4.5f32);
 
         let buffer_without_description: &str = "20 qid:9 1:1.00 2:222.30 3:444.50";
         let data_point = SVMLight::load_datapoint(buffer_without_description).unwrap();
@@ -193,8 +194,8 @@ mod tests {
         assert_eq!(data_point.get_label(), 20);
         assert_eq!(data_point.get_query_id(), 9);
         assert_eq!(data_point.get_features().len(), 3);
-        assert_eq!(*data_point.get_feature(1).unwrap(), 1.0f32);
-        assert_eq!(*data_point.get_feature(2).unwrap(), 222.3f32);
-        assert_eq!(*data_point.get_feature(3).unwrap(), 444.5f32)
+        assert_eq!(**data_point.get_feature(1).unwrap(), 1.0f32);
+        assert_eq!(**data_point.get_feature(2).unwrap(), 222.3f32);
+        assert_eq!(**data_point.get_feature(3).unwrap(), 444.5f32)
     }
 }

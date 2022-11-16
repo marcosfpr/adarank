@@ -3,16 +3,16 @@
 
 ///
 /// Metric MAP (Mean Average Precision).
-/// 
+///
 pub mod map;
 
 ///
 /// Metric P@k (Precision at k).
-/// 
+///
 pub mod precision;
 
 use crate::error::LtrError;
-use crate::ranklist::RankList;
+use crate::memory_system::elements::ranklist::RankList;
 use crate::DataSet;
 
 ///

@@ -1,7 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 use crate::eval::Evaluator;
-use crate::ranklist::RankList;
+use crate::memory_system::elements::ranklist::RankList;
 
 ///
 /// MAP (Mean Average Precision) for a set of queries is the mean of the average precision
@@ -49,8 +49,9 @@ impl ToString for MAP {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::datapoint::DataPoint;
-    use crate::ranklist::RankList;
+    use crate::memory_system::elements::datapoint::DataPoint;
+    use crate::memory_system::elements::feature::Feature;
+    use crate::memory_system::elements::ranklist::RankList;
     use crate::rl;
     use crate::utils::randomize;
 
@@ -59,12 +60,46 @@ mod tests {
     #[test]
     fn test_map() {
         let ranklist = rl!(
-            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc1"),
-            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc2"),
-            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc3"),
-            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc4"),
-            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc5"),
-            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc6")
+            (
+                0,
+                9,
+                randomize::randomize_uniform::<Feature>(
+                    Feature::from(0f32),
+                    Feature::from(100f32),
+                    20
+                ),
+                "doc1"
+            ),
+            (
+                1,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc2"
+            ),
+            (
+                1,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc3"
+            ),
+            (
+                0,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc4"
+            ),
+            (
+                1,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc5"
+            ),
+            (
+                0,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc6"
+            )
         );
 
         let map = MAP;

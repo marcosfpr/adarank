@@ -2,11 +2,17 @@
 // This code is licensed under MIT license (see LICENSE for details)
 use std::cmp::Ordering;
 use std::fmt;
+
 use std::ops::Index;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{error::LtrError, Feature};
+use crate::error::LtrError;
+
+use super::{
+    byte_rpr::{ByteRpr, FixedByteLen},
+    feature::Feature,
+};
 
 ///
 /// A DataPoint is a single training instance (Like in RankLib).
@@ -25,7 +31,7 @@ pub struct DataPoint {
     label: u8,
     /// The query id of the DataPoint.
     /// This is the identifier of the query that the DataPoint belongs to.
-    query_id: u32,
+    query_id: u64,
     /// The features of the DataPoint.
     /// This is a vector of `Feature`s.
     features: Vec<Feature>,
@@ -59,7 +65,7 @@ impl DataPoint {
     ///
     pub fn new(
         label: u8,
-        query_id: u32,
+        query_id: u64,
         features: Vec<Feature>,
         description: Option<&str>,
     ) -> DataPoint {
@@ -81,7 +87,7 @@ impl DataPoint {
     ///
     /// Returns the query id of the DataPoint.
     ///
-    pub fn get_query_id(&self) -> u32 {
+    pub fn get_query_id(&self) -> u64 {
         self.query_id
     }
 
@@ -139,7 +145,7 @@ impl DataPoint {
     ///
     /// * `query_id` - The new query id of the DataPoint.
     ///
-    pub fn set_query_id(&mut self, query_id: u32) {
+    pub fn set_query_id(&mut self, query_id: u64) {
         self.query_id = query_id;
     }
 
@@ -258,6 +264,54 @@ impl Index<usize> for DataPoint {
     }
 }
 
+impl ByteRpr for DataPoint {
+    fn as_byte_rpr(&self, buff: &mut dyn std::io::Write) -> usize {
+        let mut size = self.label.as_byte_rpr(buff) + self.query_id.as_byte_rpr(buff);
+
+        size += (self.features.len() as u64).as_byte_rpr(buff);
+        size += self.features.as_byte_rpr(buff);
+
+        if let Some(d) = &self.description {
+            size += (d.len() as u64).as_byte_rpr(buff) + d.as_byte_rpr(buff);
+        } else {
+            size += (0u64).as_byte_rpr(buff);
+        }
+
+        size
+    }
+
+    fn from_byte_rpr(bytes: &[u8]) -> Self {
+        let label = bytes[0];
+
+        let (start, end) = (1, 1 + u64::segment_len());
+        let query_id = u64::from_byte_rpr(&bytes[start..end]);
+
+        let (start, end) = (end, end + u64::segment_len());
+        let features_len = u64::from_byte_rpr(&bytes[start..end]);
+
+        let (start, end) = (end, end + features_len as usize);
+        let features = Vec::<Feature>::from_byte_rpr(&bytes[start..end]);
+
+        let (start, end) = (end, end + u64::segment_len());
+        let description_len = u64::from_byte_rpr(&bytes[start..end]);
+
+        let description = if description_len > 0 {
+            let (start, end) = (end, end + description_len as usize);
+            let description = String::from_byte_rpr(&bytes[start..end]);
+            Some(description)
+        } else {
+            None
+        };
+
+        DataPoint {
+            label,
+            query_id,
+            features,
+            description,
+        }
+    }
+}
+
 ///
 /// A macro to create a new DataPoint.
 /// This macro is useful when creating a new DataPoint with a given label, the query_id, the
@@ -278,11 +332,13 @@ macro_rules! dp {
 #[cfg(test)]
 mod tests {
 
+    use crate::fvec;
+
     use super::*;
 
     #[test]
     fn test_data_point_new() {
-        let features: Vec<Feature> = vec![1.2, 3.4, 5.6];
+        let features = fvec![1.2, 3.4, 5.6];
         let mut data_point = dp!(1, 2, features.clone(), "This is a test");
         assert_eq!(data_point.get_label(), 1);
         assert_eq!(data_point.get_query_id(), 2);
@@ -294,7 +350,7 @@ mod tests {
 
         // Assert formatting
         let formatted_data_point = format!("{}", data_point);
-        assert_eq!(formatted_data_point, "DataPoint: label=1, query_id=2, features=[1.2, 3.4, 5.6], description=Some(\"This is a test\")");
+        assert_eq!(formatted_data_point, "DataPoint: label=1, query_id=2, features=[Feature(1.2), Feature(3.4), Feature(5.6)], description=Some(\"This is a test\")");
 
         // Assert cloning
         let cloned_data_point = data_point.clone();
@@ -304,14 +360,14 @@ mod tests {
         assert_eq!(data_point, data_point);
         assert_eq!(
             cloned_data_point,
-            DataPoint::new(1, 2, vec![0.0], Some("This is a test"))
+            DataPoint::new(1, 2, fvec![0.0], Some("This is a test"))
         );
         //                            ^-- Equal to the previous DataPoint!
 
         // Assert inequality
         assert_ne!(
             cloned_data_point,
-            DataPoint::new(2, 4, vec![1.2, 3.4, 5.6], Some("This is a test"))
+            DataPoint::new(2, 4, fvec![1.2, 3.4, 5.6], Some("This is a test"))
         );
 
         // Setting
@@ -329,25 +385,25 @@ mod tests {
 
     #[test]
     fn test_update_features() {
-        let mut mydp = dp!(1, 2, vec![1.2, 3.4, 5.6], "This is a test");
+        let mut mydp = dp!(1, 2, fvec![1.2, 3.4, 5.6], "This is a test");
 
         // Assert that the features are correct
-        assert_eq!(mydp.get_features(), &vec![1.2, 3.4, 5.6]);
+        assert_eq!(mydp.get_features(), &fvec![1.2, 3.4, 5.6]);
 
         match mydp.get_feature(0) {
             Ok(_) => assert!(false),
             Err(er) => assert_eq!(er, LtrError::FeatureIndexOutOfBounds(0 as usize)),
         }
 
-        mydp.add_feature(20.0).unwrap();
+        mydp.add_feature(Feature::from(20.0)).unwrap();
 
-        assert_eq!(mydp.get_feature(4), Ok(&20.0));
+        assert_eq!(mydp.get_feature(4), Ok(&Feature::from(20.0)));
 
         let snapshot = mydp.clone();
 
-        mydp.set_feature(4, 21.0).unwrap();
+        mydp.set_feature(4, Feature::from(21.0)).unwrap();
 
-        assert_eq!(mydp.get_feature(4), Ok(&21.0));
+        assert_eq!(mydp.get_feature(4), Ok(&Feature::from(21.0)));
 
         assert_ne!(mydp.get_features(), snapshot.get_features());
         assert_eq!(mydp, snapshot); // equal because the label is the same.
@@ -355,5 +411,32 @@ mod tests {
         mydp.set_label(2);
 
         assert!(mydp > snapshot);
+    }
+
+    #[test]
+    fn test_byte_rpr() {
+        let features: Vec<Feature> = fvec![1.2, 3.4, 5.6];
+        {
+            let original = dp!(1, 2, features.clone(), "This is a test");
+
+            let result = DataPoint::from_byte_rpr(&original.alloc_byte_rpr());
+
+            assert_eq!(original, result);
+
+            assert_eq!(original.get_features(), result.get_features());
+
+            assert_eq!(original.get_description(), result.get_description());
+        }
+        // {
+        //     let original = dp!(2, 15, features.clone());
+
+        //     let result = DataPoint::from_byte_rpr(&original.alloc_byte_rpr());
+
+        //     assert_eq!(original, result);
+
+        //     assert_eq!(original.get_features(), result.get_features());
+
+        //     assert_eq!(original.get_description(), result.get_description());
+        // }
     }
 }

@@ -1,14 +1,13 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-
 use std::cell::{Ref, RefCell};
 use std::fmt;
 use std::fmt::Formatter;
 
 use serde::{Deserialize, Serialize};
 
-use crate::datapoint::DataPoint;
 use crate::error::LtrError;
+use crate::memory_system::elements::datapoint::DataPoint;
 
 /// A RankList is the object to be ranked by `Learner`s.
 ///
@@ -232,14 +231,14 @@ macro_rules! rl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{dp, loader::svmlight::*};
+    use crate::{dp, fvec, loader::svmlight::*};
 
     #[test]
     fn test_ranklist() {
         let rank_list = rl!(
-            (0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
-            (1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),
-            (0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3")
+            (0, 9, fvec![10.0, 1.2, 4.3, 5.4], "doc1"),
+            (1, 9, fvec![11.0, 2.2, 4.5, 5.6], "doc2"),
+            (0, 9, fvec![12.0, 2.5, 4.7, 5.2], "doc3")
         );
 
         assert_eq!(rank_list.len(), 3);
@@ -256,19 +255,19 @@ mod tests {
         let first_data_point = rank_list.get(0).unwrap();
         assert_eq!(first_data_point.get_label(), 0);
         assert_eq!(first_data_point.get_query_id(), 9);
-        assert_eq!(*first_data_point.get_feature(1).unwrap(), 10.0f32);
+        assert_eq!(**first_data_point.get_feature(1).unwrap(), 10.0f32);
 
         // checking the second data point just for sanity
         let second_data_point = rank_list.get(1).unwrap();
         assert_eq!(second_data_point.get_label(), 1);
         assert_eq!(second_data_point.get_query_id(), 9);
-        assert_eq!(*second_data_point.get_feature(2).unwrap(), 2.2f32);
+        assert_eq!(**second_data_point.get_feature(2).unwrap(), 2.2f32);
 
         // checking the third data point just for sanity
         let third_data_point = rank_list.get(2).unwrap();
         assert_eq!(third_data_point.get_label(), 0);
         assert_eq!(third_data_point.get_query_id(), 9);
-        assert_eq!(*third_data_point.get_feature(3).unwrap(), 4.7f32);
+        assert_eq!(**third_data_point.get_feature(3).unwrap(), 4.7f32);
 
         let string_representation = format!("{}", rank_list);
         assert_eq!(string_representation, "RankList object with 3 data points");
@@ -359,9 +358,9 @@ mod tests {
     #[test]
     fn test_ranklist_iterator() {
         let rank_list: RankList = RankList::from(vec![
-            dp!(0, 9, vec![10.0, 1.2, 4.3, 5.4], "doc1"),
-            dp!(1, 9, vec![11.0, 2.2, 4.5, 5.6], "doc2"),
-            dp!(0, 9, vec![12.0, 2.5, 4.7, 5.2], "doc3"),
+            dp!(0, 9, fvec![10.0, 1.2, 4.3, 5.4], "doc1"),
+            dp!(1, 9, fvec![11.0, 2.2, 4.5, 5.6], "doc2"),
+            dp!(0, 9, fvec![12.0, 2.5, 4.7, 5.2], "doc3"),
         ]);
 
         assert_eq!(rank_list.len(), 3);

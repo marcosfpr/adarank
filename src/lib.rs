@@ -67,17 +67,9 @@
 //! [source code](https://github.com/marcosfpr/ltrs/blob/master/examples/ohsumed.rs))
 
 ///
-/// Define a core primitive for the library: `DataPoint`.  
-/// A `DataPoint` is a element of a `RankList` in a `DataSet`.
+/// Define a the core memory definitions for  this LTR framework.
 ///
-pub mod datapoint;
-
-///
-/// Define a core primitive for the library: `RankList`.
-/// A `RankList` is a list of `DataPoint`s and provides methods for
-/// ranking them.
-///
-pub mod ranklist;
+pub mod memory_system;
 
 ///
 /// Define the error type for the library.
@@ -120,11 +112,6 @@ pub mod learner;
 pub mod ensemble;
 
 ///
-/// A particular Feature for lt.rs is just a floating point value.
-/// The feature_value is the value of the feature.
-type Feature = f32;
-
-///
 /// For simplicity, we will use a DataSet as a vector of RankLists.
 ///
-pub type DataSet = Vec<ranklist::RankList>;
+pub type DataSet = Vec<memory_system::elements::ranklist::RankList>;

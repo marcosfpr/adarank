@@ -1,7 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 use crate::eval::Evaluator;
-use crate::ranklist::RankList;
+use crate::memory_system::elements::ranklist::RankList;
 
 ///
 /// Precision is the fraction of the documents retrieved that are relevant to the user's information need.
@@ -72,8 +72,9 @@ impl ToString for Precision {
 mod tests {
     use super::*;
 
-    use crate::datapoint::DataPoint;
-    use crate::ranklist::RankList;
+    use crate::memory_system::elements::datapoint::DataPoint;
+    use crate::memory_system::elements::feature::Feature;
+    use crate::memory_system::elements::ranklist::RankList;
     use crate::rl;
     use crate::utils::randomize;
 
@@ -82,12 +83,42 @@ mod tests {
     #[test]
     fn test_precision() {
         let ranklist = rl!(
-            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc1"),
-            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc2"),
-            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc3"),
-            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc4"),
-            (1, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc5"),
-            (0, 9, randomize::randomize_uniform(0f32, 100f32, 20), "doc6")
+            (
+                0,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc1"
+            ),
+            (
+                1,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc2"
+            ),
+            (
+                1,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc3"
+            ),
+            (
+                0,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc4"
+            ),
+            (
+                1,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc5"
+            ),
+            (
+                0,
+                9,
+                randomize::randomize_uniform(Feature::from(0f32), Feature::from(100f32), 20),
+                "doc6"
+            )
         );
 
         let p1 = Precision::new(1);
