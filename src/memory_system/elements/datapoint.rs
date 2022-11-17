@@ -277,6 +277,8 @@ impl ByteRpr for DataPoint {
             size += (0u64).as_byte_rpr(buff);
         }
 
+        println!("size: {} ", size);
+
         size
     }
 
@@ -289,7 +291,10 @@ impl ByteRpr for DataPoint {
         let (start, end) = (end, end + u64::segment_len());
         let features_len = u64::from_byte_rpr(&bytes[start..end]);
 
-        let (start, end) = (end, end + features_len as usize);
+        let (start, end) = (
+            end,
+            end + features_len as usize * Feature::segment_len() as usize,
+        );
         let features = Vec::<Feature>::from_byte_rpr(&bytes[start..end]);
 
         let (start, end) = (end, end + u64::segment_len());
