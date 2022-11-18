@@ -3,9 +3,9 @@ use ltrs::{
     eval::map::MAP,
     learner::Learner,
     loader::{svmlight::SVMLight, LtrFormat},
+    memory_system::elements::dataset::DataSet,
     ranker::Ranker,
     utils::logging::init_logging,
-    DataSet,
 };
 
 fn main() {

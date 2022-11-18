@@ -12,8 +12,8 @@ pub mod map;
 pub mod precision;
 
 use crate::error::LtrError;
+use crate::memory_system::elements::dataset::DataSet;
 use crate::memory_system::elements::ranklist::RankList;
-use crate::DataSet;
 
 ///
 ///

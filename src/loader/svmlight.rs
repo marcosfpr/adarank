@@ -3,9 +3,9 @@
 //
 use crate::error::LtrError;
 use crate::memory_system::elements::datapoint::DataPoint;
+use crate::memory_system::elements::dataset::DataSet;
 use crate::memory_system::elements::feature::Feature;
 use crate::memory_system::elements::ranklist::RankList;
-use crate::DataSet;
 
 use super::LtrFormat;
 

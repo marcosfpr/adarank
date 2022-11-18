@@ -12,9 +12,9 @@ use crate::{
     learner::{
         DatasetConfigurable, FeaturesConfigurable, FileSerializable, Learner, MetricConfigurable,
     },
+    memory_system::elements::dataset::DataSet,
     ranker::Ranker,
     utils::logging::{Alignment, TableConfig, TableLogger},
-    DataSet,
 };
 
 ///

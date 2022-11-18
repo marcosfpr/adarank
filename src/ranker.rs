@@ -1,9 +1,6 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-use crate::{
-    memory_system::elements::{datapoint::DataPoint, ranklist::RankList},
-    DataSet,
-};
+use crate::memory_system::elements::{datapoint::DataPoint, dataset::DataSet, ranklist::RankList};
 
 /// Idea
 /// Trait Ranker: predict + rank

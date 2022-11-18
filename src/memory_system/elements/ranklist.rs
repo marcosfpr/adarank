@@ -7,7 +7,10 @@ use std::fmt::Formatter;
 use serde::{Deserialize, Serialize};
 
 use crate::error::LtrError;
+use crate::memory_system::elements::byte_rpr::{ByteRpr, FixedByteLen};
 use crate::memory_system::elements::datapoint::DataPoint;
+
+use super::byte_rpr::DynamicByteLen;
 
 /// A RankList is the object to be ranked by `Learner`s.
 ///
@@ -198,6 +201,48 @@ impl fmt::Display for RankList {
             "RankList object with {} data points",
             self.data_points.borrow().len()
         )
+    }
+}
+
+impl DynamicByteLen for RankList {
+    fn segment_len(&self) -> usize {
+        let vec_len: usize = self
+            .data_points
+            .borrow()
+            .iter()
+            .map(|dp| dp.segment_len())
+            .sum();
+
+        u64::segment_len() + vec_len
+    }
+}
+
+impl ByteRpr for RankList {
+    fn as_byte_rpr(&self, buff: &mut dyn std::io::Write) -> usize {
+        let dps = self.data_points.borrow();
+        let mut size: usize = (dps.len() as u64).as_byte_rpr(buff);
+        dps.iter().for_each(|dp| {
+            size += (dp.segment_len() as u64).as_byte_rpr(buff) + dp.as_byte_rpr(buff);
+        });
+        size
+    }
+
+    fn from_byte_rpr(bytes: &[u8]) -> Self {
+        let (mut start, mut end) = (0, u64::segment_len() as usize);
+        let len = u64::from_byte_rpr(&bytes[start..end]);
+        let mut data_points = Vec::new();
+        for _ in 0..len {
+            start = end;
+            end = end + u64::segment_len();
+
+            let nbytes = u64::from_byte_rpr(&bytes[start..end]) as usize;
+
+            start = end;
+            end = end + nbytes;
+
+            data_points.push(DataPoint::from_byte_rpr(&bytes[start..end]));
+        }
+        RankList::new(data_points)
     }
 }
 

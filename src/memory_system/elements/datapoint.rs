@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::error::LtrError;
 
 use super::{
-    byte_rpr::{ByteRpr, FixedByteLen},
+    byte_rpr::{ByteRpr, DynamicByteLen, FixedByteLen},
     feature::Feature,
 };
 
@@ -277,15 +277,14 @@ impl ByteRpr for DataPoint {
             size += (0u64).as_byte_rpr(buff);
         }
 
-        println!("size: {} ", size);
-
         size
     }
 
     fn from_byte_rpr(bytes: &[u8]) -> Self {
-        let label = bytes[0];
+        let (start, end) = (0, u8::segment_len());
+        let label = u8::from_byte_rpr(&bytes[start..end]);
 
-        let (start, end) = (1, 1 + u64::segment_len());
+        let (start, end) = (end, end + u64::segment_len());
         let query_id = u64::from_byte_rpr(&bytes[start..end]);
 
         let (start, end) = (end, end + u64::segment_len());
@@ -314,6 +313,21 @@ impl ByteRpr for DataPoint {
             features,
             description,
         }
+    }
+}
+
+impl DynamicByteLen for DataPoint {
+    fn segment_len(&self) -> usize {
+        let description_size = match &self.description {
+            Some(d) => d.len(),
+            None => 0,
+        };
+        u8::segment_len()
+            + u64::segment_len()
+            + u64::segment_len()
+            + (self.features.len() * Feature::segment_len())
+            + u64::segment_len()
+            + description_size
     }
 }
 
@@ -424,24 +438,30 @@ mod tests {
         {
             let original = dp!(1, 2, features.clone(), "This is a test");
 
-            let result = DataPoint::from_byte_rpr(&original.alloc_byte_rpr());
+            let bytes = original.alloc_byte_rpr();
+            let result = DataPoint::from_byte_rpr(&bytes);
 
             assert_eq!(original, result);
 
             assert_eq!(original.get_features(), result.get_features());
 
             assert_eq!(original.get_description(), result.get_description());
+
+            assert_eq!(bytes.len(), original.segment_len())
         }
-        // {
-        //     let original = dp!(2, 15, features.clone());
+        {
+            let original = dp!(2, 15, features.clone());
 
-        //     let result = DataPoint::from_byte_rpr(&original.alloc_byte_rpr());
+            let bytes = original.alloc_byte_rpr();
+            let result = DataPoint::from_byte_rpr(&bytes);
 
-        //     assert_eq!(original, result);
+            assert_eq!(original, result);
 
-        //     assert_eq!(original.get_features(), result.get_features());
+            assert_eq!(original.get_features(), result.get_features());
 
-        //     assert_eq!(original.get_description(), result.get_description());
-        // }
+            assert_eq!(original.get_description(), result.get_description());
+
+            assert_eq!(bytes.len(), original.segment_len())
+        }
     }
 }

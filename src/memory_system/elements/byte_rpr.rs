@@ -57,6 +57,18 @@ pub trait FixedByteLen: ByteRpr {
     fn segment_len() -> usize;
 }
 
+/**
+ * Get the segment len for types that have dynamic byte len.
+ * E.g. (Vec<T> doesn't have fixed type, but has a runtime length.)
+ */
+pub trait DynamicByteLen: ByteRpr {
+    ///
+    /// Returns the length of the segment that represents the corresponding object.
+    /// If a type is `FixedByteLen`, then it's segment has a known size.
+    ///
+    fn segment_len(&self) -> usize;
+}
+
 impl<T> ByteRpr for Option<T>
 where
     T: ByteRpr + FixedByteLen,
@@ -205,6 +217,12 @@ impl ByteRpr for u8 {
     }
 }
 
+impl FixedByteLen for u8 {
+    fn segment_len() -> usize {
+        1
+    }
+}
+
 impl ByteRpr for u64 {
     fn as_byte_rpr(&self, buff: &mut dyn std::io::Write) -> usize {
         let bytes = self.to_le_bytes();
@@ -288,17 +306,6 @@ impl ByteRpr for String {
     }
     fn from_byte_rpr(bytes: &[u8]) -> Self {
         String::from_utf8(bytes.to_vec()).unwrap()
-    }
-}
-
-impl ByteRpr for Vec<u8> {
-    fn as_byte_rpr(&self, buff: &mut dyn std::io::Write) -> usize {
-        buff.write_all(self).unwrap();
-        buff.flush().unwrap();
-        self.len()
-    }
-    fn from_byte_rpr(bytes: &[u8]) -> Self {
-        bytes.to_vec()
     }
 }
 

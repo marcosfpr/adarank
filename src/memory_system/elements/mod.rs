@@ -23,9 +23,20 @@ pub mod feature;
 /// A `DataPoint` is a element of a `RankList` in a `DataSet`.
 ///
 pub mod datapoint;
-///
+
 /// Defines a core primitive for the library: `RankList`.
 /// A `RankList` is a list of `DataPoint`s and provides methods for
 /// ranking them.
 ///
 pub mod ranklist;
+
+///
+/// Defines a mmap storage mecanism to guarantee scalability
+///
+pub mod storage;
+
+/// Defines a core primitive for the library: `DataSet`.
+/// A `DataSet` is a list of `RankLiist`s and provides methods for
+/// storing and accessing them.
+///
+pub mod dataset;

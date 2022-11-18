@@ -1,7 +1,9 @@
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
-use crate::{error::LtrError, eval::Evaluator, ranker::Ranker, DataSet};
+use crate::{
+    error::LtrError, eval::Evaluator, memory_system::elements::dataset::DataSet, ranker::Ranker,
+};
 
 ///
 /// This trait represents the basic behavior for

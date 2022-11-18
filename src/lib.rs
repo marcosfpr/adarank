@@ -110,8 +110,3 @@ pub mod learner;
 /// Define a class of `Ranker`s based on ensemble methods.
 ///
 pub mod ensemble;
-
-///
-/// For simplicity, we will use a DataSet as a vector of RankLists.
-///
-pub type DataSet = Vec<memory_system::elements::ranklist::RankList>;
