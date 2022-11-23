@@ -16,6 +16,15 @@ pub struct DataSet2 {
     pub(crate) storage: Storage,
 }
 
+// impl DataSet2 {
+//     pub fn new() -> DataSet2 {
+//         // todo
+//         DataSet2 {
+
+//         }
+//     }
+// }
+
 ///
 /// For simplicity, we will use a DataSet as a vector of RankLists.
 ///
