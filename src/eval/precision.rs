@@ -1,7 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 use crate::eval::Evaluator;
-use crate::memory_system::elements::ranklist::RankList;
+use crate::memory_system::elements::ranklist::RankListPermutation;
 
 ///
 /// Precision is the fraction of the documents retrieved that are relevant to the user's information need.
@@ -41,10 +41,10 @@ impl Evaluator for Precision {
     ///
     /// Evaluates the precision of the given rank list.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> f32 {
+    fn evaluate_ranklist(&self, ranklist_permutation: &RankListPermutation) -> f32 {
         let mut precision_score = 0.0f32;
-        for i in 0..self.limit {
-            match ranklist.get(i) {
+        for i in &ranklist_permutation.permutation {
+            match ranklist_permutation.ranklist.get(*i) {
                 Ok(dp) => {
                     if dp.get_label() == 1 {
                         precision_score += 1.0;
@@ -125,9 +125,9 @@ mod tests {
         let mut p3 = Precision::new(3);
         let p5 = Precision::new(5);
 
-        let p1_score = p1.evaluate_ranklist(&ranklist);
-        let p3_score = p3.evaluate_ranklist(&ranklist);
-        let p5_score = p5.evaluate_ranklist(&ranklist);
+        let p1_score = p1.evaluate_ranklist(&RankListPermutation::from(&ranklist));
+        let p3_score = p3.evaluate_ranklist(&RankListPermutation::from(&ranklist));
+        let p5_score = p5.evaluate_ranklist(&RankListPermutation::from(&ranklist));
 
         assert!(relative_eq!(p1_score, 0.0, max_relative = 0.01f32));
         assert!(relative_eq!(p3_score, 0.66, max_relative = 0.01f32));
@@ -140,7 +140,7 @@ mod tests {
         p3.set_limit(2);
         assert_eq!(p3.limit(), 2);
         assert!(relative_eq!(
-            p3.evaluate_ranklist(&ranklist),
+            p3.evaluate_ranklist(&RankListPermutation::from(&ranklist)),
             0.5,
             max_relative = 0.01f32
         ));

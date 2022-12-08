@@ -27,7 +27,7 @@ fn main() {
         // Cloning a sample to test later...
         let test_sample = ohsumed_dataset[0].clone();
 
-        let mut adarank = AdaRank::new(ohsumed_dataset, Box::new(MAP), 50, 3, 0.003, None, None);
+        let mut adarank = AdaRank::new(ohsumed_dataset, Box::new(MAP), 50, 10, 0.003, None, None);
 
         adarank.fit().unwrap();
 

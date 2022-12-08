@@ -29,3 +29,8 @@ pub struct DataSet2 {
 /// For simplicity, we will use a DataSet as a vector of RankLists.
 ///
 pub type DataSet = Vec<super::ranklist::RankList>;
+
+///
+/// List of permutations
+///
+pub type DataSetPermutation<'a> = Vec<super::ranklist::RankListPermutation<'a>>;

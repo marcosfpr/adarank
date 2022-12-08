@@ -244,8 +244,7 @@ impl AdaRank {
     fn evaluate_weak_ranker(&self, ranker: &WeakRanker) -> f32 {
         let mut score = 0.0;
         for (i, sample) in self.training_dataset.iter().enumerate() {
-            ranker.rank(sample);
-            score += self.scorer.evaluate_ranklist(sample) * self.sample_weights[i];
+            score += self.scorer.evaluate_ranklist(&ranker.rank(sample)) * self.sample_weights[i];
         }
         score
     }
@@ -292,13 +291,15 @@ impl AdaRank {
                 .iter_mut()
                 .zip(self.sample_weights.iter())
             {
-                best_weak_ranker.rank(ranklist);
-                let score = self.scorer.evaluate_ranklist(ranklist);
+                let score = self
+                    .scorer
+                    .evaluate_ranklist(&best_weak_ranker.rank(ranklist));
                 num += (1.0 + score) * *weight;
                 denom += (1.0 - score) * *weight;
             }
 
-            let amount_to_say = 0.5 * (num / denom).log10();
+            // TODO: that's a work around for negative feature values
+            let amount_to_say = 0.5 * (num.abs() / denom.abs()).log10();
 
             // 3rd step: update the weights
             self.rankers.push(best_weak_ranker.clone());
@@ -313,9 +314,7 @@ impl AdaRank {
             train_scores_list.reserve(self.training_dataset.len());
 
             for ranklist in self.training_dataset.iter() {
-                self.rank(ranklist);
-
-                let score = self.scorer.evaluate_ranklist(ranklist);
+                let score = self.scorer.evaluate_ranklist(&self.rank(ranklist));
                 let exp_score = (-score).exp();
 
                 training_score += score;
@@ -345,8 +344,10 @@ impl AdaRank {
             let mut val_score = 0.0f32;
             if let Some(val_dataset) = &self.validation_dataset {
                 if !val_dataset.is_empty() && it % 1 == 0 {
-                    self.rank_dataset(val_dataset);
-                    val_score = match self.scorer.evaluate_dataset(val_dataset) {
+                    val_score = match self
+                        .scorer
+                        .evaluate_dataset(&self.rank_dataset(val_dataset))
+                    {
                         Ok(score) => score,
                         Err(e) => {
                             log::error!("Error evaluating validation dataset: {}", e);
@@ -409,15 +410,15 @@ impl Learner for AdaRank {
             return Err(crate::error::LtrError::NoRankers);
         }
 
-        self.rank_dataset(&self.training_dataset);
-        self.score_training = self.scorer.evaluate_dataset(&self.training_dataset)?;
+        self.score_training = self
+            .scorer
+            .evaluate_dataset(&self.rank_dataset(&self.training_dataset))?;
 
         match &self.validation_dataset {
             Some(dataset) => {
-                self.rank_dataset(dataset);
                 self.score_validation = self
                     .scorer
-                    .evaluate_dataset(&self.training_dataset)
+                    .evaluate_dataset(&self.rank_dataset(dataset))
                     .unwrap_or_else(|e| {
                         log::error!("Error evaluating training dataset: {}", e);
                         0.0

@@ -12,8 +12,8 @@ pub mod map;
 pub mod precision;
 
 use crate::error::LtrError;
-use crate::memory_system::elements::dataset::DataSet;
-use crate::memory_system::elements::ranklist::RankList;
+use crate::memory_system::elements::dataset::DataSetPermutation;
+use crate::memory_system::elements::ranklist::RankListPermutation;
 
 ///
 ///
@@ -38,7 +38,7 @@ pub trait Evaluator: ToString {
     /// # Returns
     /// Average of the metric defined on the `evaluate_ranklist` function.
     ///
-    fn evaluate_dataset(&self, dataset: &DataSet) -> Result<f32, LtrError> {
+    fn evaluate_dataset(&self, dataset: &DataSetPermutation) -> Result<f32, LtrError> {
         if dataset.is_empty() {
             return Err(LtrError::EvaluationError(
                 "Error in Evaluator::evaluate_dataset: the dataset is empty.",
@@ -52,20 +52,20 @@ pub trait Evaluator: ToString {
     }
 
     ///
-    /// Evaluates a `RankList` previously ordered by relevance.
+    /// Evaluates a `RankListPermutation` previously ordered by relevance.
     ///
     /// Notice that the evaluation is error safe, meaning that if an error occurs during the
     /// evaluation, the function will return `0.0`.
     ///
     /// # Arguments
     ///
-    /// * `ranklist` - The `RankList` to be evaluated.
+    /// * `ranklist` - The `RankListPermutation` to be evaluated.
     ///
     /// # Returns
     ///
     /// The metric value.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> f32;
+    fn evaluate_ranklist(&self, ranklist: &RankListPermutation) -> f32;
 }
 
 // todo: test this module

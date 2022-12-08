@@ -1,7 +1,7 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
 use crate::eval::Evaluator;
-use crate::memory_system::elements::ranklist::RankList;
+use crate::memory_system::elements::ranklist::RankListPermutation;
 
 ///
 /// MAP (Mean Average Precision) for a set of queries is the mean of the average precision
@@ -17,15 +17,16 @@ impl Evaluator for MAP {
     ///
     /// Evaluates the MAP for a set of queries.
     ///
-    fn evaluate_ranklist(&self, ranklist: &RankList) -> f32 {
+    fn evaluate_ranklist(&self, ranklist_permutation: &RankListPermutation) -> f32 {
         let mut average_precision = 0.0f32;
         let mut num_relevant_docs = 0;
-        for i in 0..ranklist.len() {
-            match ranklist.get(i) {
+        for idx in &ranklist_permutation.permutation {
+            match ranklist_permutation.ranklist.get(*idx) {
+                // TODO: permutations needs to be aware of the label?
                 Ok(dp) => {
                     if dp.get_label() > 0 {
                         num_relevant_docs += 1;
-                        average_precision += num_relevant_docs as f32 / (i as f32 + 1.0);
+                        average_precision += num_relevant_docs as f32 / (*idx as f32 + 1.0);
                     }
                 }
                 Err(_) => {
@@ -104,7 +105,12 @@ mod tests {
 
         let map = MAP;
 
-        let map_score = map.evaluate_ranklist(&ranklist);
+        let unity_permutation = RankListPermutation {
+            permutation: (0..ranklist.len()).collect(),
+            ranklist: &ranklist,
+        };
+
+        let map_score = map.evaluate_ranklist(&unity_permutation);
 
         assert!(relative_eq!(map_score, 0.588, max_relative = 0.01f32));
     }

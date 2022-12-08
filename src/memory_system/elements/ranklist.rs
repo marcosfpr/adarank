@@ -25,6 +25,7 @@ use super::byte_rpr::DynamicByteLen;
 /// without mutable borrowing it. This is particularly useful when
 /// shuffling the `DataPoint`s inside the RankList.
 ///
+/// TODO: the comments above leads to unefficient code. I'll work in some refactoring.
 ///
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankList {
@@ -32,6 +33,16 @@ pub struct RankList {
     /// The list of `DataPoint`s.
     ///
     data_points: RefCell<Vec<DataPoint>>,
+}
+
+#[derive(Clone)]
+pub struct RankListPermutation<'a> {
+    ///
+    /// The list of pairs (Original position, Score, Label)
+    ///
+    pub(crate) permutation: Vec<usize>,
+
+    pub(crate) ranklist: &'a RankList,
 }
 
 impl RankList {
@@ -121,7 +132,7 @@ impl RankList {
     }
 
     ///
-    /// Permute the `RankList` according to the given permutation vector.
+    /// Permute the `RankList` according to the given permutation vector.Performs poorly.
     ///
     /// # Arguments
     /// * `permutation` - The permutation vector.
@@ -243,6 +254,15 @@ impl ByteRpr for RankList {
             data_points.push(DataPoint::from_byte_rpr(&bytes[start..end]));
         }
         RankList::new(data_points)
+    }
+}
+
+impl<'a> From<&'a RankList> for RankListPermutation<'a> {
+    fn from(rl: &'a RankList) -> RankListPermutation<'a> {
+        RankListPermutation {
+            permutation: (0..rl.len()).collect(),
+            ranklist: rl,
+        }
     }
 }
 

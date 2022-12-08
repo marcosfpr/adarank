@@ -1,6 +1,10 @@
 /// Copyright (c) 2021 Marcos Pontes
 // This code is licensed under MIT license (see LICENSE for details)
-use crate::memory_system::elements::{datapoint::DataPoint, dataset::DataSet, ranklist::RankList};
+use crate::memory_system::elements::{
+    datapoint::DataPoint,
+    dataset::{DataSet, DataSetPermutation},
+    ranklist::{RankList, RankListPermutation},
+};
 
 /// Idea
 /// Trait Ranker: predict + rank
@@ -25,7 +29,7 @@ pub trait Ranker {
     ///
     /// Perform ranking on a `RankList`.
     ///
-    fn rank(&self, ranklist: &RankList) {
+    fn rank<'a>(&self, ranklist: &'a RankList) -> RankListPermutation<'a> {
         let mut score_per_index: Vec<(usize, f32)> = ranklist
             .into_iter()
             .enumerate()
@@ -33,20 +37,28 @@ pub trait Ranker {
             .collect();
 
         // Sort by score
-        score_per_index.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        score_per_index.sort_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap());
 
-        // Reorder the ranklist based on the index of the sorted score
-        ranklist
-            .permute(score_per_index.iter().map(|&(i, _)| i).collect())
-            .unwrap();
+        RankListPermutation {
+            permutation: score_per_index
+                .iter()
+                .map(|(i, _)| *i)
+                .collect::<Vec<usize>>(),
+            ranklist: ranklist,
+        }
     }
 
     ///
-    /// Perform ranking on a `DataSet`.
+    /// Perform ranking on a `DataSet`. Quite expensive, use carefully.
     ///
-    fn rank_dataset(&self, dataset: &DataSet) {
+    fn rank_dataset<'a>(&self, dataset: &'a DataSet) -> DataSetPermutation<'a> {
+        let mut permutations = Vec::new();
         for ranklist in dataset.iter() {
-            self.rank(ranklist);
+            permutations.push(self.rank(ranklist));
+            // ranklist
+            //     .permute(rlp.permutation.iter().map(|&(i, _)| i).collect())
+            //     .unwrap();
         }
+        permutations
     }
 }
