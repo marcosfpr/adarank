@@ -1,7 +1,7 @@
 name: Reusable Publish Workflow
 
 on:
-  publish_ltrs:
+  publish:
     inputs:
       alloy:
         description: "Publish Alloy"
