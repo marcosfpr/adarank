@@ -1,33 +1,33 @@
 name: Reusable Publish Workflow
 
 on:
-  publish:
+  workflow_call:
     inputs:
       alloy:
-        description: "Publish Alloy"
         required: false
         default: "false"
 
-    jobs:
-      strategy:
+jobs:
+  triage:
+    strategy:
       fail-fast: false
       matrix:
         platform: [macos-latest, ubuntu-18.04, windows-latest]
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Set AlloyDB flag
+        shell: bash
+        if: ${{ inputs.alloy == 'true' }}
+        run: echo REACT_APP_ALLOYDB=true >> "$GITHUB_ENV"
 
-      steps:
-        - name: Set AlloyDB flag
-          shell: bash
-          if: ${{ inputs.alloy == 'true' }}
-          run: echo REACT_APP_ALLOYDB=true >> "$GITHUB_ENV"
+      - name: Compile and release for ${{ matrix.platform }}
+        uses: rust-build/rust-build.action@v1.4.0
+        with:
+          target: ${{ matrix.platform }}
+          release: true
+          args: --all-features
 
-        - name: Compile and release for ${{ matrix.platform }}
-          uses: rust-build/rust-build.action@v1.4.0
-          with:
-            target: ${{ matrix.platform }}
-            release: true
-            args: --all-features
-
-        - name: Echo AlloyDB flag
-          shell: bash
-          if: ${{ inputs.alloy == 'true' }}
-          run: echo AlloyDB flag ${{ inputs.alloy }}
+      - name: Echo AlloyDB flag
+        shell: bash
+        if: ${{ inputs.alloy == 'true' }}
+        run: echo AlloyDB flag ${{ inputs.alloy }}
