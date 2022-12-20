@@ -15,13 +15,13 @@ jobs:
     name: Publish for ${{ matrix.platform }}
     runs-on: ${{ matrix.platform }}
     steps:
-      - uses: ./.github/template/publish
+      - uses: ../.github/template/publish
         with:
           alloy: false
 
       - name: Publish Alloy
         # If tag finishes with -alloy
         if: ${{ endsWith(github.ref, '-alloy') }}
-        uses: ./.github/template/publish
+        uses: ../.github/template/publish
         with:
           alloy: true
