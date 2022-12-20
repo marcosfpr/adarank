@@ -7,8 +7,8 @@ on:
 
 jobs:
   publish:
-    uses: ./.github/workflows/publish_template.yml
+    uses: marcosfpr/ltrs/.github/workflows/publish_template.yml@master
   publish_alloy:
-    uses: ./.github/workflows/publish_template.yml
+    uses: marcosfpr/ltrs/.github/workflows/publish_template.yml@master
     with:
       alloy: true
