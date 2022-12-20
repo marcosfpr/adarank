@@ -7,23 +7,8 @@ on:
 
 jobs:
   publish:
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [macos-latest, ubuntu-18.04, windows-latest]
-
-    name: Publish for ${{ matrix.platform }}
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - uses: ./.github/template/publish
-        with:
-          alloy: false
-          target: ${{ matrix.platform }}
-
-      - name: Publish Alloy
-        # If tag finishes with -alloy
-        if: ${{ endsWith(github.ref, '-alloy') }}
-        uses: ./.github/template/publish
-        with:
-          alloy: true
-          target: ${{ matrix.platform }}
+    uses: marcosfpr/ltrs/.github/template/publish.yml@master
+  publish-alloy:
+    uses: marcosfpr/ltrs/.github/template/publish.yml@master
+    with:
+      alloy: true
