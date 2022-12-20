@@ -1,0 +1,27 @@
+name: "Publish"
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+      - "v*"
+
+jobs:
+  publish:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-18.04, windows-latest]
+
+    name: Publish for ${{ matrix.platform }}
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: ./.github/template/publish
+        with:
+          alloy: false
+
+      - name: Publish Alloy
+        # If tag finishes with -alloy
+        if: ${{ endsWith(github.ref, '-alloy') }}
+        uses: ./.github/template/publish
+        with:
+          alloy: true
