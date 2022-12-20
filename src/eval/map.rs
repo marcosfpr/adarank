@@ -22,7 +22,6 @@ impl Evaluator for MAP {
         let mut num_relevant_docs = 0;
         for idx in &ranklist_permutation.permutation {
             match ranklist_permutation.ranklist.get(*idx) {
-                // TODO: permutations needs to be aware of the label?
                 Ok(dp) => {
                     if dp.get_label() > 0 {
                         num_relevant_docs += 1;
