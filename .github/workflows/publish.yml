@@ -7,8 +7,10 @@ on:
 
 jobs:
   publish:
-    uses: ./.github/workflows/publish_template.yml
-  publish_alloy:
-    uses: ./.github/workflows/publish_template.yml
+    uses: marcosfpr/ltrs/.github/workflows/publish_template.yml@release
+  # Publish alloy if the tag ends with "-alloy"
+  publish-alloy:
+    if: endsWith(github.ref, '-alloy')
+    uses: marcosfpr/ltrs/.github/workflows/publish_template.yml@release
     with:
       alloy: true
