@@ -1,7 +1,7 @@
 name: Reusable Publish Workflow
 
 on:
-  publish:
+  workflow_call:
     inputs:
       alloy:
         description: "Publish Alloy"
