@@ -1,9 +1,10 @@
 /// Copyright (c) 2021 Marcos Pontes
 /// MIT License
 ///
-use std::collections::HashSet;
+use std::{collections::HashSet, fmt::Display};
 
-use colored::Color;
+use tabled::{TableIteratorExt, Tabled};
+use tracing::error;
 
 use super::weak::WeakRanker;
 
@@ -13,7 +14,6 @@ use crate::{
         DatasetConfigurable, FeaturesConfigurable, FileSerializable, Learner, MetricConfigurable,
     },
     ranker::Ranker,
-    utils::logging::{Alignment, TableConfig, TableLogger},
     DataSet,
 };
 
@@ -103,9 +103,34 @@ pub struct AdaRank {
     ///
     used_features: HashSet<usize>,
     ///
-    /// Logger.
+    /// History of progress.
     ///
-    logger: TableLogger,
+    history: Vec<AdaRankIter>,
+}
+
+///
+/// Possible status given an fit iteration
+#[derive(Debug)]
+pub enum AdaRankStatus {
+    /// Successfull iteration
+    Ok,
+    /// Bad iteration
+    Bad,
+    /// To many attempts with no improvement
+    Satured,
+}
+
+///
+/// Iteration history track.
+#[derive(Tabled)]
+pub struct AdaRankIter {
+    iteration: usize,
+    feature: usize,
+    train_score: f32,
+    train_improvement: f32,
+    val_score: f32,
+    val_improvement: f32,
+    status: AdaRankStatus,
 }
 
 impl AdaRank {
@@ -128,7 +153,6 @@ impl AdaRank {
         let used_features = HashSet::new();
 
         let sample_weights = AdaRank::initialize_weights(training_dataset.len());
-        let tcfg = AdaRank::table_config();
 
         // If None, use all features -> range(0, training_dataset[0].len())
         let features_used = match features {
@@ -156,80 +180,8 @@ impl AdaRank {
             rankers,
             best_rankers,
             used_features,
-            logger: TableLogger::new(tcfg),
+            history: vec![],
         }
-    }
-
-    fn table_config() -> TableConfig {
-        TableConfig::new(vec![7, 8, 9, 9, 9, 9, 9], (2, 2), Alignment::Center)
-    }
-
-    fn debug_header(&self) -> String {
-        self.logger.log(
-            vec![
-                "#Iter",
-                "Feature",
-                format!("{}-T", self.scorer.to_string()).as_str(),
-                "Improve-T",
-                format!("{}-V", self.scorer.to_string()).as_str(),
-                "Improve-V",
-                "Status",
-            ],
-            Some(Color::Cyan),
-        )
-    }
-
-    fn debug_line(
-        &self,
-        current_it: usize,
-        feature: usize,
-        training_score: f32,
-        improvement: f32,
-        validation_score: f32,
-        validation_improvement: f32,
-        status: &str,
-    ) -> String {
-        self.logger.log(
-            vec![
-                format!("{}", current_it).as_str(),
-                format!("{}", feature).as_str(),
-                format!("{:.5}", training_score).as_str(),
-                format!("{:.5}", improvement).as_str(),
-                format!("{:.5}", validation_score).as_str(),
-                format!("{:.5}", validation_improvement).as_str(),
-                status,
-            ],
-            None,
-        )
-    }
-
-    ///
-    /// Get the training results summary.
-    ///
-    pub fn log_results(&self) {
-        let results_config = TableConfig::new(vec![9, 9], (2, 2), Alignment::Center);
-        let table_logger = TableLogger::new(results_config);
-
-        log::info!(
-            "{}",
-            table_logger.log(
-                vec![
-                    format!("{}-T", self.scorer.to_string()).as_str(),
-                    format!("{}-V", self.scorer.to_string()).as_str(),
-                ],
-                Some(Color::Cyan),
-            )
-        );
-        log::info!(
-            "{}",
-            table_logger.log(
-                vec![
-                    format!("{:.5}", self.score_training).as_str(),
-                    format!("{:.5}", self.score_validation).as_str(),
-                ],
-                None,
-            )
-        );
     }
 
     fn initialize_weights(len: usize) -> Vec<f32> {
@@ -279,7 +231,7 @@ impl AdaRank {
             let best_weak_ranker = match self.select_weak_ranker() {
                 Some(ranker) => ranker,
                 None => {
-                    log::error!("No weak ranker selected");
+                    error!("No weak ranker selected");
                     break;
                 }
             };
@@ -327,14 +279,18 @@ impl AdaRank {
             training_score /= self.training_dataset.len() as f32;
             let delta = training_score + self.tolerance - self.previous_traning_score;
 
-            let mut status = if delta > 0.0 { "OK" } else { "BAD" };
+            let mut status = if delta > 0.0 {
+                AdaRankStatus::Ok
+            } else {
+                AdaRankStatus::Bad
+            };
 
             let selected_feature = best_weak_ranker.feature_id;
 
             if self.previous_feature == selected_feature {
                 self.consecutive_selections += 1;
                 if self.consecutive_selections == self.max_consecutive_selections {
-                    status = "SATURED";
+                    status = AdaRankStatus::Satured;
                     self.consecutive_selections = 0;
                     self.used_features.insert(selected_feature);
                 }
@@ -349,7 +305,7 @@ impl AdaRank {
                     val_score = match self.scorer.evaluate_dataset(val_dataset) {
                         Ok(score) => score,
                         Err(e) => {
-                            log::error!("Error evaluating validation dataset: {}", e);
+                            error!("Error evaluating validation dataset: {}", e);
                             0.0
                         }
                     };
@@ -364,18 +320,15 @@ impl AdaRank {
             let train_improvement = training_score - self.previous_traning_score;
             let validation_improvement = val_score - self.previous_validation_score;
 
-            log::debug!(
-                "{}",
-                self.debug_line(
-                    it as usize,
-                    selected_feature,
-                    training_score,
-                    train_improvement,
-                    val_score,
-                    validation_improvement,
-                    status,
-                )
-            );
+            self.history.push(AdaRankIter {
+                iteration: it as usize,
+                feature: selected_feature,
+                train_score: training_score,
+                train_improvement,
+                val_score,
+                val_improvement: validation_improvement,
+                status,
+            });
 
             if delta <= 0.0 {
                 self.rankers.pop();
@@ -392,11 +345,20 @@ impl AdaRank {
             }
         }
     }
+
+    /// Retrieves the learning history.
+    ///
+    /// It needs to run `fit` first.
+    pub fn print_history<W: std::io::Write>(&self, mut writer: W) -> Result<(), std::io::Error> {
+        let table = tabled::Table::new(&self.history);
+
+        writer.write_fmt(format_args!("{}", table))
+    }
 }
 
 impl Learner for AdaRank {
     fn fit(&mut self) -> Result<(), crate::error::LtrError> {
-        log::debug!("{}", self.debug_header());
+        // debug!("{}", self.debug_header());
 
         self.learn();
 
@@ -419,7 +381,7 @@ impl Learner for AdaRank {
                     .scorer
                     .evaluate_dataset(&self.training_dataset)
                     .unwrap_or_else(|e| {
-                        log::error!("Error evaluating training dataset: {}", e);
+                        error!("Error evaluating training dataset: {}", e);
                         0.0
                     });
             }
@@ -428,7 +390,7 @@ impl Learner for AdaRank {
             }
         }
 
-        self.log_results();
+        // self.log_results();
         Ok(())
     }
 
@@ -454,7 +416,7 @@ impl Ranker for AdaRank {
             let feature_value: f32 = match datapoint.get_feature(ranker.feature_id) {
                 Ok(value) => *value,
                 Err(e) => {
-                    log::error!("Error getting feature value: {}", e);
+                    error!("Error getting feature value: {}", e);
                     0.0
                 }
             };
@@ -497,5 +459,29 @@ impl DatasetConfigurable for AdaRank {
 
     fn set_validation_dataset(&mut self, _dataset: DataSet) {
         todo!()
+    }
+}
+
+impl Display for AdaRank {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let table = vec![
+            [
+                format!("{}-T", self.scorer.to_string()).as_str(),
+                format!("{}-V", self.scorer.to_string()).as_str(),
+            ],
+            [
+                format!("{:.5}", self.score_training).as_str(),
+                format!("{:.5}", self.score_validation).as_str(),
+            ],
+        ]
+        .table();
+
+        write!(f, "{}", table)
+    }
+}
+
+impl Display for AdaRankStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self)
     }
 }

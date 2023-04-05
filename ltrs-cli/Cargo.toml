@@ -1,0 +1,32 @@
+[package]
+name = "ltr"
+version = "0.1.0"
+authors = ["Marcos F. Pontes <mfprezende@gmail.com>"]
+license = "MIT"
+edition = "2021"
+categories = ["learning-to-rank", "information-retrieval", "data-structures"]
+description = """Learning to rank library for Rust."""
+documentation = "https://docs.rs/ltrs"
+homepage = "https://github.com/marcosfpr/ltrs"
+repository = "https://github.com/marcosfpr/ltrs"
+readme = "README.md"
+keywords = ["search", "ranking", "learning-to-rank", "information", "retrieval"]
+default-run = "ltr"
+
+[dependencies]
+serde = { version = "1.0.136", features = ["derive", "rc"] }
+serde_json = "1.0"
+chrono = "0.4"
+encode_unicode = "0.3.6"
+lazy_static = "1.4.0"
+rand = "0.8.5"
+tracing = "0.1.37"
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
+tracing-appender = "0.2.2"
+tracing-indicatif = "0.3.0"
+owo-colors = "3.5.0"
+indicatif = "0.17.3"
+num_cpus = "1.15.0"
+
+[dev-dependencies]
+approx = "0.5.1"
