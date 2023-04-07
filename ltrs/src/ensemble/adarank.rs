@@ -108,6 +108,9 @@ pub struct AdaRank {
     history: Vec<AdaRankIter>,
 }
 
+// todo: move to generic type
+type History = tabled::Table;
+
 ///
 /// Possible status given an fit iteration
 #[derive(Debug)]
@@ -348,11 +351,8 @@ impl AdaRank {
 
     /// Retrieves the learning history.
     ///
-    /// It needs to run `fit` first.
-    pub fn print_history<W: std::io::Write>(&self, mut writer: W) -> Result<(), std::io::Error> {
-        let table = tabled::Table::new(&self.history);
-
-        writer.write_fmt(format_args!("{}", table))
+    pub fn history(&self) -> History {
+        tabled::Table::new(&self.history)
     }
 }
 

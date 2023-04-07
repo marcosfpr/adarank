@@ -26,7 +26,7 @@ fn main() {
 
         adarank.fit().unwrap();
 
-        adarank.print_history(std::io::stdout()).unwrap();
+        println!("{}", adarank.history());
 
         let dp = test_sample.get(0).unwrap();
 
