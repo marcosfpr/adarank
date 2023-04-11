@@ -3,12 +3,14 @@
 ///
 use std::fmt::Display;
 
+use thiserror::Error;
+
 ///
 /// All errors specific to the LTR library.
 /// These errors can  be called for all modules in the LTR library,
 /// and provide a way to identify, semantically well-defined, the source of the error.
 ///
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Error, Debug, Clone, PartialEq, Eq)]
 pub enum LtrError {
     ///
     /// Error raised when a feature is not found in a `DataPoint`.
@@ -63,24 +65,39 @@ impl Display for LtrError {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_display_error_message() {
-        
-        assert_eq!("Feature index out of bounds: 2", LtrError::FeatureIndexOutOfBounds(2).to_string());
-        assert_eq!("RankList index out of bounds: 10", LtrError::RankListIndexOutOfBounds(10).to_string());
-        assert_eq!("Invalid datapoint: Test", LtrError::InvalidDataPoint("Test").to_string());
-        assert_eq!("Evaluation error: Foo", LtrError::EvaluationError("Foo").to_string());
-        assert_eq!("Error while parsing an input: Unknown", LtrError::ParseError("Unknown").to_string());
-        assert_eq!("Error while reading or writing an input: I/O", LtrError::IOError("I/O".to_string()).to_string());
-        assert_eq!("No rankers were built. Run `fit` first.", LtrError::NoRankers.to_string());
-
-    
+        assert_eq!(
+            "Feature index out of bounds: 2",
+            LtrError::FeatureIndexOutOfBounds(2).to_string()
+        );
+        assert_eq!(
+            "RankList index out of bounds: 10",
+            LtrError::RankListIndexOutOfBounds(10).to_string()
+        );
+        assert_eq!(
+            "Invalid datapoint: Test",
+            LtrError::InvalidDataPoint("Test").to_string()
+        );
+        assert_eq!(
+            "Evaluation error: Foo",
+            LtrError::EvaluationError("Foo").to_string()
+        );
+        assert_eq!(
+            "Error while parsing an input: Unknown",
+            LtrError::ParseError("Unknown").to_string()
+        );
+        assert_eq!(
+            "Error while reading or writing an input: I/O",
+            LtrError::IOError("I/O".to_string()).to_string()
+        );
+        assert_eq!(
+            "No rankers were built. Run `fit` first.",
+            LtrError::NoRankers.to_string()
+        );
     }
-
-
 }

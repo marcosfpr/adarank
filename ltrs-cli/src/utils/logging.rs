@@ -1,5 +1,4 @@
 use std::backtrace::Backtrace;
-use std::str::FromStr;
 use std::{fmt, io};
 
 use owo_colors::OwoColorize;
@@ -255,17 +254,9 @@ fn colorize_level(level: &Level) -> String {
 }
 
 fn log_filter(level: Level) -> EnvFilter {
-    EnvFilter::default()
-        .add_directive(Directive::from(level))
-        // SAFETY: static definitions should work always
-        .add_directive(Directive::from_str("tokio_postgres=error").unwrap())
-        .add_directive(Directive::from_str("postgres=error").unwrap())
-        .add_directive(Directive::from_str("mysql=error").unwrap())
-        .add_directive(Directive::from_str("kmt_core=error").unwrap())
-        .add_directive(Directive::from_str("sqlcrypt=error").unwrap())
-        .add_directive(Directive::from_str("sqlparse=error").unwrap())
-        .add_directive(Directive::from_str("sqlparser=error").unwrap())
-        .add_directive(Directive::from_str("metadata=error").unwrap())
+    EnvFilter::default().add_directive(Directive::from(level))
+    // SAFETY: static definitions should work always
+    // .add_directive(Directive::from_str("tokio_postgres=error").unwrap())
 }
 
 fn disabled_logs_filter() -> EnvFilter {
