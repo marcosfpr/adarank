@@ -3,3 +3,6 @@
 
 /// Randomization capabilities for lt.rs
 pub mod randomize;
+
+/// Progress bar feature
+pub mod progress_bar;

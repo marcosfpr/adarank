@@ -14,6 +14,7 @@ use crate::{
         DatasetConfigurable, FeaturesConfigurable, FileSerializable, Learner, MetricConfigurable,
     },
     ranker::Ranker,
+    utils::progress_bar,
     DataSet,
 };
 
@@ -229,6 +230,9 @@ impl AdaRank {
     }
 
     fn learn(&mut self) {
+        let progress = progress_bar::start(self.iter);
+        let current_progress = progress.enter();
+
         for it in 0..self.iter {
             // 1st step: select a weak ranker
             let best_weak_ranker = match self.select_weak_ranker() {
@@ -346,7 +350,11 @@ impl AdaRank {
             for (weight, score) in self.sample_weights.iter_mut().zip(train_scores_list.iter()) {
                 *weight *= (-amount_to_say * score).exp() / total_score;
             }
+            progress_bar::inc(1);
         }
+
+        drop(current_progress);
+        drop(progress);
     }
 
     /// Retrieves the learning history.
@@ -358,8 +366,6 @@ impl AdaRank {
 
 impl Learner for AdaRank {
     fn fit(&mut self) -> Result<(), crate::error::LtrError> {
-        // debug!("{}", self.debug_header());
-
         self.learn();
 
         if !self.best_rankers.is_empty() {
