@@ -1,6 +1,3 @@
-/// Copyright (c) 2021 Marcos Pontes
-// This code is licensed under MIT license (see LICENSE for details)
-
 use std::cell::{Ref, RefCell};
 use std::fmt;
 use std::fmt::Formatter;
@@ -22,8 +19,6 @@ use crate::error::LtrError;
 /// which means that it's possible to modify a RankList
 /// without mutable borrowing it. This is particularly useful when
 /// shuffling the `DataPoint`s inside the RankList.
-///
-///
 #[derive(Clone, Serialize, Deserialize)]
 pub struct RankList {
     ///
@@ -38,7 +33,6 @@ impl RankList {
     /// # Arguments
     ///
     /// * `data_points` - The list of `DataPoint`s.
-    ///
     pub fn new(data_points: Vec<DataPoint>) -> RankList {
         RankList {
             data_points: RefCell::new(data_points),
@@ -50,12 +44,10 @@ impl RankList {
     /// # Returns
     ///
     /// The length of the `RankList`.
-    ///
     pub fn len(&self) -> usize {
         self.data_points.borrow().len()
     }
 
-    ///
     /// Get the `DataPoint` at the given index.
     ///
     /// # Arguments
@@ -65,7 +57,6 @@ impl RankList {
     /// # Returns
     ///
     /// The `DataPoint` at the given index.
-    ///
     pub fn get(&self, index: usize) -> Result<Ref<DataPoint>, LtrError> {
         if index < self.len() {
             Ok(Ref::map(self.data_points.borrow(), |dp| &dp[index]))
@@ -74,14 +65,12 @@ impl RankList {
         }
     }
 
-    ///
     /// Set the `DataPoint` at the given index.
     ///
     /// # Arguments
     ///
     /// * `index` - The index of the `DataPoint` to be set.
     /// * `data_point` - The `DataPoint` to be set.
-    ///
     pub fn set(&self, index: usize, data_point: DataPoint) -> Result<(), LtrError> {
         if index < self.len() {
             self.data_points.borrow_mut()[index] = data_point;
@@ -91,9 +80,13 @@ impl RankList {
         }
     }
 
-    ///
     /// Rank the `RankList` according to the given `DataPoint`s.
     ///
+    /// # Returns
+    /// * `Ok(())` if the `RankList` was ranked successfully.
+    ///
+    /// # Errors
+    /// * `LtrError` if the `RankList` could not be ranked.
     pub fn rank(&self) -> Result<(), LtrError> {
         // Reverse sorting
         self.data_points
@@ -102,12 +95,16 @@ impl RankList {
         Ok(())
     }
 
-    ///
     /// Rank the `RankList` according to the given `DataPoint`s and a given feature index.
     ///
     /// # Arguments
     /// * `feature_index` - The index of the feature to be used to sort the `RankList`.
     ///
+    /// # Returns
+    /// * `Ok(())` if the `RankList` was ranked successfully.
+    ///
+    /// # Errors
+    /// * `LtrError` if the `RankList` could not be ranked.
     pub fn rank_by_feature(&self, feature_index: usize) -> Result<(), LtrError> {
         self.data_points.borrow_mut().sort_by(|a, b| {
             b.get_feature(feature_index)
@@ -118,12 +115,16 @@ impl RankList {
         Ok(())
     }
 
-    ///
     /// Permute the `RankList` according to the given permutation vector.
     ///
     /// # Arguments
     /// * `permutation` - The permutation vector.
     ///
+    /// # Returns
+    /// * `Ok(())` if the `RankList` was permuted successfully.
+    ///
+    /// # Errors
+    /// * `LtrError` if the `RankList` could not be permuted.
     pub fn permute(&self, permutation: Vec<usize>) -> Result<(), LtrError> {
         let mut new_data_points = Vec::with_capacity(self.data_points.borrow().len());
         for i in permutation {
@@ -137,11 +138,8 @@ impl RankList {
     }
 }
 
-///
 /// A `RankList` iterator.
-/// It's possible to iterate over a `RankList` using the `Iterator` trait.
-/// Still a in-development feature.
-///
+/// Makes possible to iterate over a `RankList` using the `Iterator` trait.
 pub struct RankListIter<'a> {
     rank_list: &'a RankList,
     index: usize,
@@ -162,10 +160,8 @@ impl<'a> Iterator for RankListIter<'a> {
     }
 }
 
-///
 /// `RankList`s are iterable over `&DataPoint`s.
 /// This allows for easy iteration over the `RankList`.
-///
 impl<'a> IntoIterator for &'a RankList {
     type Item = Ref<'a, DataPoint>;
     type IntoIter = RankListIter<'a>;
@@ -178,9 +174,7 @@ impl<'a> IntoIterator for &'a RankList {
     }
 }
 
-///
 /// We can interpret a `RankList` as a `Vec` of `DataPoint`s.
-///
 impl From<Vec<DataPoint>> for RankList {
     fn from(data_points: Vec<DataPoint>) -> RankList {
         RankList {
@@ -189,9 +183,7 @@ impl From<Vec<DataPoint>> for RankList {
     }
 }
 
-///
 /// Displaying a `RankList` is done by displaying the `DataPoint`s.
-///
 impl fmt::Display for RankList {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(
@@ -202,11 +194,9 @@ impl fmt::Display for RankList {
     }
 }
 
-///
 /// A macro to create a `RankList` from a vector of
 /// `DataPoint`s represented by a tuple of label,  query_id,
 /// features and the optional description.
-///
 #[macro_export]
 macro_rules! rl {
     ($(($label:expr, $query_id:expr, $features:expr)),*) => {

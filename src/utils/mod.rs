@@ -1,8 +1,5 @@
-/// Copyright (c) 2021 Marcos Pontes
-/// This code is licensed under MIT license (see LICENSE for details)
+pub mod prettytable;
 
-/// Logging capabilities for lt.rs
-pub mod logging;
-
-/// Randomization capabilities for lt.rs
-pub mod randomize;
+/// Randomization capabilities for tests.
+#[cfg(test)]
+pub mod random;

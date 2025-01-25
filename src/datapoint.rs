@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 
 use crate::{error::LtrError, Feature};
 
-///
 /// A DataPoint is a single training instance (Like in RankLib).
 /// A DataPoint represents a pair `[item, query]` extracted
 /// from a LTR-valid data format. A common format is the SVM-Light
@@ -17,8 +16,6 @@ use crate::{error::LtrError, Feature};
 ///
 /// where `<label>` is the target value, `<query_id>` is the query ID,  <feature_i> is the feature
 /// and `<value_i>` is the value of the feature.
-///
-///
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataPoint {
     /// The label of the DataPoint.
@@ -35,9 +32,7 @@ pub struct DataPoint {
 }
 
 impl DataPoint {
-    ///
     /// Creates an empty DataPoint
-    ///
     pub fn empty() -> DataPoint {
         DataPoint {
             label: 0,
@@ -47,7 +42,6 @@ impl DataPoint {
         }
     }
 
-    ///
     /// Creates a new DataPoint.
     ///
     /// # Arguments
@@ -56,7 +50,6 @@ impl DataPoint {
     /// * `query_id` - The query id of the DataPoint.
     /// * `features` - The features of the DataPoint.
     /// * `description` - Optional description of the DataPoint.
-    ///
     pub fn new(
         label: u8,
         query_id: u32,
@@ -71,28 +64,21 @@ impl DataPoint {
         }
     }
 
-    ///
     /// Returns the label of the DataPoint.
-    ///
     pub fn get_label(&self) -> u8 {
         self.label
     }
 
-    ///
     /// Returns the query id of the DataPoint.
-    ///
     pub fn get_query_id(&self) -> u32 {
         self.query_id
     }
 
-    ///
     /// Returns the features of the DataPoint.
-    ///
     pub fn get_features(&self) -> &Vec<Feature> {
         &self.features
     }
 
-    ///
     /// Get a specific feature of the DataPoint.
     ///
     /// # Arguments
@@ -106,7 +92,6 @@ impl DataPoint {
     /// # Returns
     ///
     /// The feature at the given index.
-    ///
     pub fn get_feature(&self, index: usize) -> Result<&Feature, LtrError> {
         if index == 0 || index > self.features.len() {
             return Err(LtrError::FeatureIndexOutOfBounds(index));
@@ -114,49 +99,40 @@ impl DataPoint {
         Ok(&self.features[index - 1])
     }
 
-    ///
     /// Returns the description of the DataPoint.
-    ///
     pub fn get_description(&self) -> Option<&String> {
         self.description.as_ref()
     }
 
-    ///
     /// Set the label of the DataPoint.
     ///
     /// # Arguments
     ///
     /// * `label` - The new label of the DataPoint.
-    ///
     pub fn set_label(&mut self, label: u8) {
         self.label = label;
     }
 
-    ///
     /// Set the query id of the DataPoint.
     ///
     /// # Arguments
     ///
     /// * `query_id` - The new query id of the DataPoint.
-    ///
     pub fn set_query_id(&mut self, query_id: u32) {
         self.query_id = query_id;
     }
 
-    ///
     /// Add a feature to the DataPoint.
     ///
     /// # Arguments
     ///
     /// * `feature` - The feature to be added.
-    ///
     pub fn add_feature(&mut self, feature: Feature) -> Result<(), LtrError> {
         // Sanity check
         self.features.push(feature);
         Ok(())
     }
 
-    ///
     /// Set a feature value with a particular index to the DataPoint.
     /// This is useful when updating the features of a DataPoint.
     ///
@@ -164,7 +140,6 @@ impl DataPoint {
     ///
     /// * `index` - The index of the feature to be updated.
     /// * `feature` - The new feature value.
-    ///
     pub fn set_feature(&mut self, index: usize, feature: Feature) -> Result<(), LtrError> {
         // Sanity check
         if index > self.features.len() {
@@ -174,25 +149,21 @@ impl DataPoint {
         Ok(())
     }
 
-    ///
     /// Set all feature values.
     ///
     /// # Arguments
     ///
     /// * `features` - The new feature values.
-    ///
     pub fn set_features(&mut self, features: Vec<Feature>) -> Result<(), LtrError> {
         self.features = features;
         Ok(())
     }
 
-    ///
     /// Set the description of the DataPoint.
     ///
     /// # Arguments
     ///
     /// * `description` - The new description of the DataPoint.
-    ///
     pub fn set_description(&mut self, description: &str) {
         self.description = Some(description.to_string());
     }
@@ -208,13 +179,11 @@ impl fmt::Display for DataPoint {
     }
 }
 
-///
 /// A DataPoint comparison is symmetric, transitive and reflexive.
+///
 /// However, notice that the comparison is not total!
-/// For example, if two DataPoints have the same label and the same query_id, but different features,
-/// they are still considered equal.
-impl Eq for DataPoint {}
-
+/// For example, if two DataPoints have the same label and the same query_id,
+/// but different features, they are still considered equal.
 impl PartialEq for DataPoint {
     fn eq(&self, other: &Self) -> bool {
         self.label == other.label && self.query_id == other.query_id
@@ -225,31 +194,17 @@ impl PartialEq for DataPoint {
     }
 }
 
-///
 /// A DataPoint can be partial compared using its label.
 /// This is useful when sorting DataPoints with the same query_id.
-///
 impl PartialOrd for DataPoint {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.label.cmp(&other.label))
     }
 }
 
-///
-/// A DataPoint can be totally compared using its label.
-/// This is useful when sorting DataPoints with the same query_id.
-///
-impl Ord for DataPoint {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.label.cmp(&other.label)
-    }
-}
-
-///
 /// Get a Feature given its feature_id.
 /// Notice that this trait is unsafe because it does not check whether the feature_id is valid.
 /// Be careful when using this trait.
-///
 impl Index<usize> for DataPoint {
     type Output = Feature;
 
@@ -258,13 +213,11 @@ impl Index<usize> for DataPoint {
     }
 }
 
-///
 /// A macro to create a new DataPoint.
 /// This macro is useful when creating a new DataPoint with a given label, the query_id, the
 /// features and the description.
 /// The features are given as a vector of `Feature`s.
 /// The description is optional.
-///
 #[macro_export]
 macro_rules! dp {
     ($label:expr, $query_id:expr, $features:expr) => {

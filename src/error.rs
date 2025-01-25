@@ -1,6 +1,3 @@
-/// Copyright (c) 2021 Marcos Pontes
-/// MIT License
-///
 use std::fmt::Display;
 
 ///
@@ -63,24 +60,39 @@ impl Display for LtrError {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_display_error_message() {
-        
-        assert_eq!("Feature index out of bounds: 2", LtrError::FeatureIndexOutOfBounds(2).to_string());
-        assert_eq!("RankList index out of bounds: 10", LtrError::RankListIndexOutOfBounds(10).to_string());
-        assert_eq!("Invalid datapoint: Test", LtrError::InvalidDataPoint("Test").to_string());
-        assert_eq!("Evaluation error: Foo", LtrError::EvaluationError("Foo").to_string());
-        assert_eq!("Error while parsing an input: Unknown", LtrError::ParseError("Unknown").to_string());
-        assert_eq!("Error while reading or writing an input: I/O", LtrError::IOError("I/O".to_string()).to_string());
-        assert_eq!("No rankers were built. Run `fit` first.", LtrError::NoRankers.to_string());
-
-    
+        assert_eq!(
+            "Feature index out of bounds: 2",
+            LtrError::FeatureIndexOutOfBounds(2).to_string()
+        );
+        assert_eq!(
+            "RankList index out of bounds: 10",
+            LtrError::RankListIndexOutOfBounds(10).to_string()
+        );
+        assert_eq!(
+            "Invalid datapoint: Test",
+            LtrError::InvalidDataPoint("Test").to_string()
+        );
+        assert_eq!(
+            "Evaluation error: Foo",
+            LtrError::EvaluationError("Foo").to_string()
+        );
+        assert_eq!(
+            "Error while parsing an input: Unknown",
+            LtrError::ParseError("Unknown").to_string()
+        );
+        assert_eq!(
+            "Error while reading or writing an input: I/O",
+            LtrError::IOError("I/O".to_string()).to_string()
+        );
+        assert_eq!(
+            "No rankers were built. Run `fit` first.",
+            LtrError::NoRankers.to_string()
+        );
     }
-
-
 }
