@@ -10,102 +10,60 @@ use super::weak::WeakRanker;
 use crate::{
     eval::Evaluator,
     learner::{
-        DatasetConfigurable, FeaturesConfigurable, FileSerializable, Learner, MetricConfigurable,
+        DatasetConfigurable, FeaturesConfigurable, Learner, MetricConfigurable,
     },
     ranker::Ranker,
-    utils::logging::{Alignment, TableConfig, TableLogger},
+    utils::prettytable::{Alignment, TableConfig, Table},
     DataSet,
 };
 
-///
 /// The basic idea of AdaRank is constructing “weak rankers” repeatedly based on reweighted
 /// training queries and linearly combining the weak rankers for making ranking predictions.
 /// In learning, AdaRank minimizes a loss function directly defined on performance measures.
 /// The details of AdaRank can be found in the paper “AdaRank: A Boosting Algorithm for Information Retrieval
-///
 pub struct AdaRank {
-    ///
     /// Training dataset.
-    ///
     training_dataset: DataSet,
-    ///
     /// Optional dataset to be used for validation.
-    ///
     validation_dataset: Option<DataSet>,
-    ///
     /// Pointer to a evaluator.
-    ///
     scorer: Box<dyn Evaluator>,
-    ///
     /// The number of iterations to be performed.
-    ///
     pub iter: u64,
-    ///
     /// Maximum number of consecutive feature selection
-    ///
     max_consecutive_selections: usize,
-    ///
     /// Current number of consecutive feature selection
-    ///
     consecutive_selections: usize,
-    ///
     /// Previous selected feature.
-    ///
     previous_feature: usize,
-    ///
     /// Tolerance criteria to stop the algorithm.
-    ///
     pub tolerance: f32,
     /// The model scoring during the training phase.
-    ///
     /// Training score of the model.
-    ///
     pub score_training: f32,
-    ///
     /// Validation score of the model.
-    ///
     pub score_validation: f32,
-    ///
     /// Subset of features to be used in the model.
-    ///
     features: Vec<usize>,
-    ///
     /// Previous training score.
-    ///
     previous_traning_score: f32,
-    ///
     /// Previous validation score.
-    ///
     previous_validation_score: f32,
-    ///
     /// Sample's weights. It indicates the importance of each sample
     /// in each iteration of the training process.
-    ///
     sample_weights: Vec<f32>,
-    ///
     /// The amount of say for each stump of the ensemble.
-    ///
     ranker_weights: Vec<f32>,
-    ///
     /// Best model's weights. It indicates the importance of each stump during the training process.
-    ///
     best_weights: Vec<f32>,
-    ///
     /// Best `WeakRanker`s of the ensemble.
-    ///
     rankers: Vec<WeakRanker>,
-    ///
     /// Best `WeakRanker`s found during the training process.
-    ///
     best_rankers: Vec<WeakRanker>,
-    ///
     /// Features already saturated.
-    ///
     used_features: HashSet<usize>,
-    ///
-    /// Logger.
-    ///
-    logger: TableLogger,
+    /// Results table.
+    table: Table,
 }
 
 impl AdaRank {
@@ -156,7 +114,7 @@ impl AdaRank {
             rankers,
             best_rankers,
             used_features,
-            logger: TableLogger::new(tcfg),
+            table: Table::new(tcfg),
         }
     }
 
@@ -165,7 +123,7 @@ impl AdaRank {
     }
 
     fn debug_header(&self) -> String {
-        self.logger.log(
+        self.table.render(
             vec![
                 "#Iter",
                 "Feature",
@@ -189,7 +147,7 @@ impl AdaRank {
         validation_improvement: f32,
         status: &str,
     ) -> String {
-        self.logger.log(
+        self.table.render(
             vec![
                 format!("{}", current_it).as_str(),
                 format!("{}", feature).as_str(),
@@ -203,16 +161,14 @@ impl AdaRank {
         )
     }
 
-    ///
     /// Get the training results summary.
-    ///
     pub fn log_results(&self) {
         let results_config = TableConfig::new(vec![9, 9], (2, 2), Alignment::Center);
-        let table_logger = TableLogger::new(results_config);
+        let table_logger = Table::new(results_config);
 
-        log::info!(
+        tracing::info!(
             "{}",
-            table_logger.log(
+            table_logger.render(
                 vec![
                     format!("{}-T", self.scorer.to_string()).as_str(),
                     format!("{}-V", self.scorer.to_string()).as_str(),
@@ -220,9 +176,9 @@ impl AdaRank {
                 Some(Color::Cyan),
             )
         );
-        log::info!(
+        tracing::info!(
             "{}",
-            table_logger.log(
+            table_logger.render(
                 vec![
                     format!("{:.5}", self.score_training).as_str(),
                     format!("{:.5}", self.score_validation).as_str(),
@@ -279,7 +235,7 @@ impl AdaRank {
             let best_weak_ranker = match self.select_weak_ranker() {
                 Some(ranker) => ranker,
                 None => {
-                    log::error!("No weak ranker selected");
+                    tracing::error!("No weak ranker selected");
                     break;
                 }
             };
@@ -349,7 +305,7 @@ impl AdaRank {
                     val_score = match self.scorer.evaluate_dataset(val_dataset) {
                         Ok(score) => score,
                         Err(e) => {
-                            log::error!("Error evaluating validation dataset: {}", e);
+                            tracing::error!("Error evaluating validation dataset: {}", e);
                             0.0
                         }
                     };
@@ -364,7 +320,7 @@ impl AdaRank {
             let train_improvement = training_score - self.previous_traning_score;
             let validation_improvement = val_score - self.previous_validation_score;
 
-            log::debug!(
+            tracing::debug!(
                 "{}",
                 self.debug_line(
                     it as usize,
@@ -396,7 +352,7 @@ impl AdaRank {
 
 impl Learner for AdaRank {
     fn fit(&mut self) -> Result<(), crate::error::LtrError> {
-        log::debug!("{}", self.debug_header());
+        tracing::debug!("{}", self.debug_header());
 
         self.learn();
 
@@ -419,7 +375,7 @@ impl Learner for AdaRank {
                     .scorer
                     .evaluate_dataset(&self.training_dataset)
                     .unwrap_or_else(|e| {
-                        log::error!("Error evaluating training dataset: {}", e);
+                        tracing::error!("Error evaluating training dataset: {}", e);
                         0.0
                     });
             }
@@ -454,7 +410,7 @@ impl Ranker for AdaRank {
             let feature_value: f32 = match datapoint.get_feature(ranker.feature_id) {
                 Ok(value) => *value,
                 Err(e) => {
-                    log::error!("Error getting feature value: {}", e);
+                    tracing::error!("Error getting feature value: {}", e);
                     0.0
                 }
             };
@@ -464,38 +420,24 @@ impl Ranker for AdaRank {
     }
 }
 
-impl FileSerializable for AdaRank {
-    fn save_to_file(&self, _path: &str) -> Result<(), crate::error::LtrError> {
-        todo!()
-    }
-
-    fn load_from_file(&mut self, _path: &str) -> Result<(), crate::error::LtrError> {
-        todo!()
-    }
-}
-
 impl FeaturesConfigurable for AdaRank {
-    fn set_features(&mut self, _features: Vec<usize>) {
-        todo!()
-    }
-
-    fn get_features(&self) -> Vec<usize> {
-        todo!()
+    fn set_features(&mut self, features: Vec<usize>) {
+        self.features = features;
     }
 }
 
 impl MetricConfigurable for AdaRank {
-    fn set_metric(&mut self, _metric: &dyn crate::eval::Evaluator) {
-        todo!()
+    fn set_metric(&mut self, metric: Box<dyn crate::eval::Evaluator>) {
+        self.scorer = metric;
     }
 }
 
 impl DatasetConfigurable for AdaRank {
-    fn set_train_dataset(&mut self, _dataset: DataSet) {
-        todo!()
+    fn set_train_dataset(&mut self, dataset: DataSet) {
+        self.training_dataset = dataset;
     }
 
-    fn set_validation_dataset(&mut self, _dataset: DataSet) {
-        todo!()
+    fn set_validation_dataset(&mut self, dataset: DataSet) {
+        self.validation_dataset = Some(dataset);
     }
 }

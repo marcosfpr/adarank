@@ -1,32 +1,79 @@
-<!-- PROJECT LOGO -->
-<br />
-<p align="center">
-  <h3 align="center">lt.rs</h3>
+# AdaRank: a boosting algorithm for information retrieval
 
-  <p align="center">
-    Learning to Rank for Rustaceans
-    <br />
-    <a href=""><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/marcosfpr/lt.rs/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/marcosfpr/lt.rs/issues">Request Feature</a>
-  </p>
-</p>
+> [!WARNING]
+> This library is not stable. Do not use it for anything serious. 
 
-### 🌟 Machine Learning for Ranking problems.
+Implementation in rust of the AdaRank algorithm for learning to rank. Abstract of the original paper:
 
-The problem of ranking documents in a given corpus is central to Information Retrieval. Although this problem has more notoriety in search engines, those ranking algorithms can be used in different solutions such as collaborative filtering, question answering, multimedia retrieval, text summarization, and online advertising.
+```
+In this paper we address the issue of learning to rank for document retrieval. In the task, a model is automatically created with some training data and then is utilized for ranking of documents. The goodness of a model is usually evaluated with performance measures such as MAP (Mean Average Precision) and NDCG (Normalized Discounted Cumulative Gain). Ideally a learning algorithm would train a ranking model that could directly optimize the performance measures with respect to the training
+data. Existing methods, however, are only able to train ranking models by minimizing loss functions loosely related to the performance measures. For example, Ranking SVM and RankBoost train ranking models by minimizing classification errors on instance pairs. To deal with the problem, we propose a novel learning algorithm within the framework of boosting, which can minimize a loss function directly defined on the performance measures. Our algorithm, referred to as AdaRank,
+repeatedly constructs 'weak rankers' on the basis of reweighted training data and finally linearly combines the weak rankers for making ranking predictions. We prove that the training process of AdaRank is exactly that of enhancing the performance measure used. Experimental results on four benchmark datasets show that AdaRank significantly outperforms the baseline methods of BM25, Ranking SVM, and RankBoost.
+```
 
-Recently, regarding the massive amount of data available for training, it's become possible to leverage existing Machine Learning (ML) technologies to build more effective ranking models. Using supervised ML techniques to solve ranking problems is called Learning to Rank (LTR). 
+# Example
+
+An example using AdaRank to rank documents from the OHSUMED dataset:
+
+```rust
+use adarank::{
+    ensemble::adarank::AdaRank,
+    eval::map::MAP,
+    learner::Learner,
+    loader::{svmlight::SVMLight, LtrFormat},
+    ranker::Ranker,
+    DataSet,
+};
+use tracing::Level;
+
+// Init logging for the application.
+//
+// It enables logging for adarank using the level provided.
+fn init_logging(level: Level) {
+    tracing_subscriber::fmt()
+        .with_max_level(level)
+        .init();
+}
 
 
-### ✨ Features
-Based on the very well-known library `RankLib`, lt.rs provides LTR models and a solid interface so that you train your own model.
+fn main() {
+    init_logging(Level::DEBUG);
 
--  **SVMLight support**
--  **AdaRank boosting method**
--  **Different relevance metrics to tune the models**
+    // Get ohsumed location from the root project path /examples/ohsumed
+    let corpus = std::path::Path::new("benchmarks/OHSUMED").join("Data/All/OHSUMED.txt");
 
+    if corpus.exists() {
+        tracing::info!("Loading corpus from {}", corpus.display());
+        let ohsumed_dataset: DataSet =
+            SVMLight::load(corpus.to_str().unwrap()).unwrap_or_else(|_| {
+                panic!(
+                    "Could not load ohsumed dataset located at {}/Data/All/OHSUMED.txt",
+                    corpus.display()
+                )
+            });
+
+        // Cloning a sample to test later...
+        let test_sample = ohsumed_dataset[0].clone();
+
+        let mut adarank = AdaRank::new(ohsumed_dataset, Box::new(MAP), 50, 3, 0.003, None, None);
+
+        adarank.fit().unwrap();
+
+        tracing::debug!("Finished fitting");
+
+        let dp = test_sample.get(0).unwrap();
+
+        let doc_label = adarank.predict(&test_sample.get(0).unwrap());
+        tracing::info!(
+            "Document {} has the score {:.2} for query {}",
+            dp.get_description().unwrap(),
+            doc_label,
+            dp.get_query_id()
+        );
+    } else {
+        tracing::error!("Corpus not found at {}", corpus.display());
+        std::process::exit(1);
+    }
+}
+```
 

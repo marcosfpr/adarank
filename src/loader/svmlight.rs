@@ -1,6 +1,3 @@
-/// Copyright (c) 2021 Marcos Pontes
-/// MIT License
-///
 use crate::datapoint::DataPoint;
 use crate::error::LtrError;
 use crate::ranklist::RankList;
@@ -8,7 +5,6 @@ use crate::DataSet;
 
 use super::LtrFormat;
 
-///
 /// The default implementation of SVMLight parsing
 /// is based on the SVM-light format.
 ///
@@ -17,9 +13,19 @@ use super::LtrFormat;
 pub struct SVMLight;
 
 impl SVMLight {
-    ///
     /// Load a single `DataPoint` from a line of the SVMLight format.
-    /// 
+    ///
+    /// The format is as follows:
+    /// <label> qid:<qid> <index1>:<value1> <index2>:<value2> ... # <info>
+    ///
+    /// # Arguments
+    /// * `buffer` - The buffer containing the SVMLight formatted data point.
+    ///
+    /// # Returns
+    /// A `DataPoint` with the data loaded from the buffer.
+    ///
+    /// # Errors
+    /// If the buffer is not in the correct format, an error is returned.
     pub fn load_datapoint(buffer: &str) -> Result<DataPoint, LtrError> {
         // Convert the buffer into a string
         let mut data_point = DataPoint::empty();
@@ -92,7 +98,6 @@ impl SVMLight {
         Ok(data_point)
     }
 
-    ///
     /// Load a RankList from a SVM-Light buffer.
     /// Notice that this method DOES NOT check whether the RankList has
     /// different query ids. If you're not sure, use the `load_dataset` method.
@@ -103,6 +108,14 @@ impl SVMLight {
     /// ...
     /// <datapointN>\n
     ///
+    /// # Arguments
+    /// * `buffer` - The buffer containing the SVMLight formatted rank list.
+    ///
+    /// # Returns
+    /// A `RankList` with the data loaded from the buffer.
+    ///
+    /// # Errors
+    /// If the buffer is not in the correct format, an error is returned.
     pub fn load_ranklist(buffer: &str) -> Result<RankList, LtrError> {
         let mut data_points = Vec::new();
         let mut buffer_iter = buffer.split('\n');
@@ -118,10 +131,13 @@ impl SVMLight {
         Ok(RankList::new(data_points))
     }
 
-    ///
     /// Load a DataSet from a SVM-Light buffer.
-    /// May panic if the buffer is invalid.
     ///
+    /// # Arguments
+    /// * `buffer` - The buffer containing the SVMLight formatted dataset.
+    ///
+    /// # Returns
+    /// A `DataSet` with the data loaded from the buffer.
     pub fn load_dataset(buffer: &str) -> Result<DataSet, LtrError> {
         let mut buffer_iter = buffer.split('\n');
         let mut dataset: DataSet = DataSet::new();
