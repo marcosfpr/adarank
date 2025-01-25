@@ -9,11 +9,9 @@ use super::weak::WeakRanker;
 
 use crate::{
     eval::Evaluator,
-    learner::{
-        DatasetConfigurable, FeaturesConfigurable, Learner, MetricConfigurable,
-    },
+    learner::{DatasetConfigurable, FeaturesConfigurable, Learner, MetricConfigurable},
     ranker::Ranker,
-    utils::prettytable::{Alignment, TableConfig, Table},
+    utils::prettytable::{Alignment, Table, TableConfig},
     DataSet,
 };
 
